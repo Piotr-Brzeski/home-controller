@@ -1,0 +1,26 @@
+name: home-controller
+
+options:
+  usesTabs: true
+  tabWidth: 2
+  indentWidth: 2
+
+settings:
+  configs:
+    Debug:
+      GCC_PREPROCESSOR_DEFINITIONS:
+    Release:
+      GCC_PREPROCESSOR_DEFINITIONS: NDEBUG=1
+  base:
+    GCC_C_LANGUAGE_STANDARD: c11
+    CLANG_CXX_LANGUAGE_STANDARD: c++20
+    USE_HEADERMAP: false
+    GCC_WARN_PEDANTIC: true
+    GCC_TREAT_WARNINGS_AS_ERRORS: true
+
+include:
+  - home-controller/home-controller.yml
+  - cpp-network/cpp-network/cpp-network.yml
+  - cpp-coap/cpp-coap/cpp-coap.yml
+  - cpp-tradfri/cpp-tradfri/cpp-tradfri.yml
+  - home-link/home-link/home-link.yml

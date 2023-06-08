@@ -1,0 +1,19 @@
+[submodule "cpp-data-format"]
+	path = cpp-data-format
+	url = https://github.com/Piotr-Brzeski/cpp-data-format.git
+[submodule "cpp-tradfri"]
+	path = cpp-tradfri
+	url = https://github.com/Piotr-Brzeski/cpp-tradfri.git
+	branch = xcodegen
+[submodule "home-link"]
+	path = home-link
+	url = https://github.com/Piotr-Brzeski/home-link.git
+	branch = xcodegen
+[submodule "cpp-network"]
+	path = cpp-network
+	url = https://github.com/Piotr-Brzeski/cpp-network.git
+	branch = xcodegen
+[submodule "cpp-coap"]
+	path = cpp-coap
+	url = https://github.com/Piotr-Brzeski/cpp-coap.git
+	branch = xcodegen

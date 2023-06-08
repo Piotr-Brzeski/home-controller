@@ -1,0 +1,36 @@
+targets:
+  home-controller:
+    platform: macOS
+    type: tool
+    dependencies:
+      - target: home-link
+        link: true
+      - target: cpp-network
+        link: true
+      - target: cpp-tradfri
+        link: true
+      - target: cpp-coap
+        link: true
+    settings:
+      HEADER_SEARCH_PATHS:
+        - ${SRCROOT}/cpp-network
+        - ${SRCROOT}/cpp-tradfri
+        - ${SRCROOT}/home-link
+        - ${SRCROOT}/cpp-data-format
+      LIBRARY_SEARCH_PATHS: /opt/homebrew/lib
+      OTHER_LDFLAGS: -lcoap-3-openssl -lssl
+      _LINUX_OTHER_LDFLAGS: -lcoap-3-gnutls
+    sources:
+      - path: controller.cpp
+        group: home-controller
+      - path: exception.h
+        group: home-controller
+        buildPhase: none
+      - path: controller.h
+        group: home-controller
+        buildPhase: none
+      - path: home-controller.cpp
+        group: home-controller
+      - path: json.h
+        group: home-controller
+        buildPhase: none
