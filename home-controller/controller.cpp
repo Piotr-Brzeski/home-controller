@@ -101,12 +101,30 @@ auto get_operation(operation_data const& operation_description, tradfri::system&
 	if(operation_description.type == "toggle") {
 		return tradfri_system.toggle_operation(operation_description.device);
 	}
+	if(operation_description.type == "increase") {
+		return tradfri_system.increase_operation(operation_description.device);
+	}
+	if(operation_description.type == "decrease") {
+		return tradfri_system.decrease_operation(operation_description.device);
+	}
 	throw exception("Invalid operation type: \"" + operation_description.type + "\".");
 }
 
 auto get_state_value(std::string const& name) {
 	if(name == "click") {
 		return link::state_value::click;
+	}
+	if(name == "plus") {
+		return link::state_value::plus;
+	}
+	if(name == "minus") {
+		return link::state_value::minus;
+	}
+	if(name == "alt_plus") {
+		return link::state_value::alt_plus;
+	}
+	if(name == "alt_minus") {
+		return link::state_value::alt_minus;
 	}
 	throw exception("Invalid state type: \"" + name + "\".");
 }
