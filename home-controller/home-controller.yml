@@ -21,12 +21,22 @@ targets:
       OTHER_LDFLAGS: -lcoap-3-openssl -lssl
       _LINUX_OTHER_LDFLAGS: -lcoap-3-gnutls
     sources:
+      - path: configuration.cpp
+        group: home-controller
+      - path: configuration.h
+        group: home-controller
+        buildPhase: none
       - path: controller.cpp
         group: home-controller
+      - path: controller.h
+        group: home-controller
+        buildPhase: none
       - path: exception.h
         group: home-controller
         buildPhase: none
-      - path: controller.h
+      - path: group.cpp
+        group: home-controller
+      - path: group.h
         group: home-controller
         buildPhase: none
       - path: home-controller.cpp
