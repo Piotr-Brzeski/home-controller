@@ -15,7 +15,7 @@ using namespace home;
 namespace {
 
 
-std::string load_file(std::string_view path) {
+std::string load_file(const char* path) {
 	auto content = std::string();
 	auto stream = std::ifstream(path);
 	std::getline(stream, content, '\0');
@@ -23,9 +23,9 @@ std::string load_file(std::string_view path) {
 }
 
 auto device_id(std::string const& type, int number) {
-	auto id = link::device_id();
+	auto id = homelink::device_id();
 	if(type == "button") {
-		id.type = link::device_type::button;
+		id.type = homelink::device_type::button;
 	}
 	else {
 		throw exception("Invalid device type: \"" + type + "\".");
@@ -41,26 +41,26 @@ auto device_id(std::string const& type, int number) {
 
 auto get_state_value(std::string const& name) {
 	if(name == "click") {
-		return link::state_value::click;
+		return homelink::state_value::click;
 	}
 	if(name == "plus") {
-		return link::state_value::plus;
+		return homelink::state_value::plus;
 	}
 	if(name == "minus") {
-		return link::state_value::minus;
+		return homelink::state_value::minus;
 	}
 	if(name == "alt_plus") {
-		return link::state_value::alt_plus;
+		return homelink::state_value::alt_plus;
 	}
 	if(name == "alt_minus") {
-		return link::state_value::alt_minus;
+		return homelink::state_value::alt_minus;
 	}
 	throw exception("Invalid state type: \"" + name + "\".");
 }
 
 }
 
-configuration::configuration(std::string_view path)
+configuration::configuration(const char* path)
 	: m_json(load_file(path))
 	, m_devices(devices())
 	, m_operations(operations())
@@ -80,8 +80,8 @@ int configuration::port() const {
 	return m_json["link"]["port"].get_int();
 }
 
-std::map<std::string, link::device_id> configuration::devices() const {
-	auto devices = std::map<std::string, link::device_id>();
+std::map<std::string, homelink::device_id> configuration::devices() const {
+	auto devices = std::map<std::string, homelink::device_id>();
 	auto json_devices = m_json["devices"];
 	for(std::size_t i = 0; i < json_devices.size(); ++i) {
 		auto json_device = json_devices[i];
@@ -97,7 +97,7 @@ std::map<std::string, link::device_id> configuration::devices() const {
 	return devices;
 }
 
-link::device_id configuration::get_device(std::string const& name) const {
+homelink::device_id configuration::get_device(std::string const& name) const {
 	auto it = m_devices.find(name);
 	if(it == m_devices.end()) {
 		throw exception("Invalid device name: \"" + name + "\".");
@@ -149,8 +149,8 @@ configuration::operation configuration::get_operation(std::string const& name) c
 	return it->second;
 }
 
-std::map<link::device_state, configuration::operation> configuration::commands() const {
-	auto commands = std::map<link::device_state, configuration::operation>();
+std::map<homelink::device_state, configuration::operation> configuration::commands() const {
+	auto commands = std::map<homelink::device_state, configuration::operation>();
 	auto json_commands = m_json["commands"];
 	for(std::size_t i = 0; i < json_commands.size(); ++i) {
 		auto json_command = json_commands[i];
@@ -158,7 +158,7 @@ std::map<link::device_state, configuration::operation> configuration::commands()
 		auto device_id = get_device(device_name);
 		auto state_name = json_command["state"].get_string();
 		auto state = get_state_value(state_name);
-		auto device_state = link::device_state{{device_id, link::state_type::event}, state};
+		auto device_state = homelink::device_state{{device_id, homelink::state_type::event}, state};
 		auto operation_name = json_command["operation"].get_string();
 		auto operation = get_operation(operation_name);
 		auto added = commands.try_emplace(device_state, std::move(operation)).second;

@@ -19,7 +19,7 @@ namespace home {
 
 class controller {
 public:
-	controller(std::string_view configuration_path);
+	controller(const char* configuration_path);
 	void start();
 	
 private:
@@ -29,7 +29,7 @@ private:
 	
 	configuration                m_configuration;
 	tradfri::system              m_tradfri_system;
-	link::controller             m_controller;
+	homelink::controller             m_controller;
 	std::map<std::string, group> m_groups;
 };
 

@@ -14,7 +14,7 @@
 
 using namespace home;
 
-controller::controller(std::string_view configuration_path)
+controller::controller(const char* configuration_path)
 	: m_configuration(configuration_path)
 	, m_tradfri_system(m_configuration.tradfri_configuration())
 {
