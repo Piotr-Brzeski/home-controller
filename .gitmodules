@@ -17,3 +17,6 @@
 	path = cpp-coap
 	url = https://github.com/Piotr-Brzeski/cpp-coap.git
 	branch = xcodegen
+[submodule "cpp-log"]
+	path = cpp-log
+	url = https://github.com/Piotr-Brzeski/cpp-log
