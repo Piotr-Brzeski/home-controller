@@ -57,7 +57,7 @@ controller::controller(const char* configuration_path)
 	for(auto& command : commands) {
 		m_controller.add(command.first, get_operation(command.second));
 	}
-	m_controller.set_periodic_task(groups_updater(m_groups), std::chrono::seconds(100));
+	m_controller.set_periodic_task(groups_updater(m_groups), std::chrono::seconds(30));
 }
 
 void controller::start() {
