@@ -23,16 +23,25 @@ public:
 		std::function<void()> const         decrease;
 	};
 	
+	group()
+		: m_it(m_members.end())
+	{
+	}
+	
 	void add(member&& new_member) {
 		m_members.push_back(std::move(new_member));
+		m_it = m_members.end();
 	}
 	
 	void toggle();
 	void increase();
 	void decrease();
 	
+	bool update_member();
+	
 private:
-	std::vector<member> m_members;
+	std::vector<member>                 m_members;
+	std::vector<member>::const_iterator m_it;
 	
 };
 

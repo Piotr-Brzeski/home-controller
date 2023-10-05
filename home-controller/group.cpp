@@ -41,3 +41,15 @@ void group::decrease() {
 	}
 	member->decrease();
 }
+
+bool group::update_member() {
+	if(m_members.empty()) {
+		return false;
+	}
+	if(m_it == m_members.end()) {
+		m_it = m_members.begin();
+	}
+	m_it->brightness();
+	++m_it;
+	return m_it != m_members.end();
+}

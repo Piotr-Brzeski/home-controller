@@ -15,6 +15,35 @@
 
 using namespace home;
 
+namespace {
+
+class groups_updater {
+public:
+	groups_updater(std::map<std::string, group>& groups)
+		: m_groups(groups)
+		, m_group_it(m_groups.begin())
+	{
+	}
+	
+	void operator()() {
+		if(m_groups.empty()) {
+			return;
+		}
+		if(m_group_it == m_groups.end()) {
+			m_group_it = m_groups.begin();
+		}
+		if(!m_group_it->second.update_member()) {
+			++m_group_it;
+		}
+	}
+	
+private:
+	std::map<std::string, group>&          m_groups;
+	std::map<std::string, group>::iterator m_group_it;
+};
+
+}
+
 controller::controller(const char* configuration_path)
 	: m_configuration(configuration_path)
 	, m_tradfri_system(m_configuration.tradfri_configuration())
@@ -28,6 +57,7 @@ controller::controller(const char* configuration_path)
 	for(auto& command : commands) {
 		m_controller.add(command.first, get_operation(command.second));
 	}
+	m_controller.set_periodic_task(groups_updater(m_groups), std::chrono::seconds(100));
 }
 
 void controller::start() {
