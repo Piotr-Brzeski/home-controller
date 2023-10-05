@@ -9,6 +9,7 @@
 #include "controller.h"
 #include "json.h"
 #include "exception.h"
+#include <algorithm>
 #include <fstream>
 #include <memory>
 

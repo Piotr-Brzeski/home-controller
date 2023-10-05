@@ -5,17 +5,19 @@ targets:
     dependencies:
       - target: home-link
         link: true
-      - target: cpp-network
-        link: true
       - target: cpp-tradfri
         link: true
       - target: cpp-coap
         link: true
+      - target: cpp-network
+        link: true
+      - target: cpp-log
+        link: true
     settings:
       HEADER_SEARCH_PATHS:
-        - ${SRCROOT}/cpp-network
-        - ${SRCROOT}/cpp-tradfri
         - ${SRCROOT}/home-link
+        - ${SRCROOT}/cpp-tradfri
+        - ${SRCROOT}/cpp-network
         - ${SRCROOT}/cpp-data-format
       LIBRARY_SEARCH_PATHS: /opt/homebrew/lib
       OTHER_LDFLAGS: -lcoap-3-openssl -lssl

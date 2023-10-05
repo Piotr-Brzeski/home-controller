@@ -25,3 +25,4 @@ include:
   - cpp-coap/cpp-coap/cpp-coap.yml
   - cpp-tradfri/cpp-tradfri/cpp-tradfri.yml
   - home-link/home-link/home-link.yml
+  - cpp-log/cpp-log/cpp-log.yml
