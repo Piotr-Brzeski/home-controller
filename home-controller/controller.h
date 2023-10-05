@@ -21,6 +21,7 @@ class controller {
 public:
 	controller(const char* configuration_path);
 	void start();
+	void wait();
 	
 private:
 	group create_group(std::vector<std::string> const& devices);
@@ -29,7 +30,7 @@ private:
 	
 	configuration                m_configuration;
 	tradfri::system              m_tradfri_system;
-	homelink::controller             m_controller;
+	homelink::controller         m_controller;
 	std::map<std::string, group> m_groups;
 };
 

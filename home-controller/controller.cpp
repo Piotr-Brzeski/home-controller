@@ -35,6 +35,10 @@ void controller::start() {
 	m_controller.start(port);
 }
 
+void controller::wait() {
+	m_controller.wait();
+}
+
 group controller::create_group(std::vector<std::string> const& devices) {
 	auto devices_group = group();
 	std::ranges::for_each(devices, [this, &devices_group](auto& device_name) {
