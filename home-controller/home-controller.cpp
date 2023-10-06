@@ -9,6 +9,29 @@
 #include "controller.h"
 #include <cpp-log/log.h>
 #include <chrono>
+#include <thread>
+#include <memory>
+
+auto start_controller(const char* configuration_path) {
+	constexpr auto wait_increment = std::chrono::seconds(1);
+	constexpr auto max_wait_time = std::chrono::seconds(3);
+	auto wait_time = std::chrono::seconds(0);
+	while(true) {
+		std::this_thread::sleep_for(wait_time);
+		try {
+			auto controller = std::make_unique<home::controller>(configuration_path);
+			controller->start();
+			return controller;
+		}
+		catch(std::exception &e) {
+			wait_time += wait_increment;
+			if(wait_time > max_wait_time) {
+				throw;
+			}
+			log::log(std::string("Home controller failed to start with exception: ") + e.what() + ". Retrying.");
+		}
+	}
+}
 
 int main(int argc, const char * argv[]) {
 	try {
@@ -17,17 +40,16 @@ int main(int argc, const char * argv[]) {
 		}
 		while(true) {
 			log::log("Starting home controller");
+			auto controller = start_controller(argv[1]);
 			auto start_time = std::chrono::steady_clock::now();
-			auto controller = home::controller(argv[1]);
-			controller.start();
-			controller.wait();
+			controller->wait();
 			auto end_time = std::chrono::steady_clock::now();
 			auto duration = end_time - start_time;
 			auto seconds = std::chrono::duration_cast<std::chrono::seconds>(duration).count();
 			log::log("Controller finished in " + std::to_string(seconds) + " seconds");
 			constexpr auto timeout = std::chrono::seconds(5);
 			if(duration < timeout) {
-				throw std::runtime_error("Controller could not start");
+				throw std::runtime_error("Controller failed to run");
 			}
 		}
 		return 0;
