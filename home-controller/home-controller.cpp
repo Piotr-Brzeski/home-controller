@@ -13,8 +13,8 @@
 #include <memory>
 
 auto start_controller(const char* configuration_path) {
-	constexpr auto wait_increment = std::chrono::seconds(1);
-	constexpr auto max_wait_time = std::chrono::seconds(3);
+	constexpr auto wait_increment = std::chrono::seconds(2);
+	constexpr auto max_wait_time = std::chrono::seconds(10);
 	auto wait_time = std::chrono::seconds(0);
 	while(true) {
 		std::this_thread::sleep_for(wait_time);
@@ -51,6 +51,7 @@ int main(int argc, const char * argv[]) {
 			if(duration < timeout) {
 				throw std::runtime_error("Controller failed to run");
 			}
+			std::this_thread::sleep_for(timeout);
 		}
 		return 0;
 	}
