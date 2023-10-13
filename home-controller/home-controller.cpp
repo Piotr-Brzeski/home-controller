@@ -28,25 +28,26 @@ auto start_controller(const char* configuration_path) {
 			if(wait_time > max_wait_time) {
 				throw;
 			}
-			log::log(std::string("Home controller failed to start with exception: ") + e.what() + ". Retrying.");
+			logger::log(std::string("Home controller failed to start with exception: ") + e.what() + ". Retrying.");
 		}
 	}
 }
 
 int main(int argc, const char * argv[]) {
+	logger::start(logger::cout());
 	try {
 		if(argc < 2) {
 			throw std::runtime_error("No configuration path");
 		}
 		while(true) {
-			log::log("Starting home controller");
+			logger::log("Starting home controller");
 			auto controller = start_controller(argv[1]);
 			auto start_time = std::chrono::steady_clock::now();
 			controller->wait();
 			auto end_time = std::chrono::steady_clock::now();
 			auto duration = end_time - start_time;
 			auto seconds = std::chrono::duration_cast<std::chrono::seconds>(duration).count();
-			log::log("Controller finished in " + std::to_string(seconds) + " seconds");
+			logger::log("Controller finished in " + std::to_string(seconds) + " seconds");
 			constexpr auto timeout = std::chrono::seconds(5);
 			if(duration < timeout) {
 				throw std::runtime_error("Controller failed to run");
@@ -56,10 +57,10 @@ int main(int argc, const char * argv[]) {
 		return 0;
 	}
 	catch(std::exception &e) {
-		log::log(std::string("Home controller finished with exception: ") + e.what());
+		logger::log(std::string("Home controller finished with exception: ") + e.what());
 	}
 	catch(...) {
-		log::log("Home controller finished with unknown exception");
+		logger::log("Home controller finished with unknown exception");
 	}
 	return 1;
 }
