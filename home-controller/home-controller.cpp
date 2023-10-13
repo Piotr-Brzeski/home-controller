@@ -34,7 +34,7 @@ auto start_controller(const char* configuration_path) {
 }
 
 int main(int argc, const char * argv[]) {
-	logger::start(logger::cout());
+	auto log = logger::start(logger::cout());
 	try {
 		if(argc < 2) {
 			throw std::runtime_error("No configuration path");
