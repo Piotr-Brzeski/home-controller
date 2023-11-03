@@ -18,11 +18,14 @@ settings:
     USE_HEADERMAP: false
     GCC_WARN_PEDANTIC: true
     GCC_TREAT_WARNINGS_AS_ERRORS: true
+    DEAD_CODE_STRIPPING: true
+    ENABLE_USER_SCRIPT_SANDBOXING: true
 
 include:
   - home-controller/home-controller.yml
   - cpp-network/cpp-network/cpp-network.yml
+  - cpp-data-format/data-format/data-format.yml
   - cpp-coap/cpp-coap/cpp-coap.yml
-  - cpp-tradfri/cpp-tradfri/cpp-tradfri.yml
+  - cpp-ikea/cpp-ikea/cpp-ikea.yml
   - home-link/home-link/home-link.yml
   - cpp-log/cpp-log/cpp-log.yml

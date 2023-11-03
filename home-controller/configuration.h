@@ -8,7 +8,8 @@
 
 #pragma once
 
-#include <cpp-tradfri/system.h>
+#include <cpp-ikea/tradfri.h>
+#include <cpp-ikea/dirigera.h>
 #include <home-link/types.h>
 #include "json.h"
 #include <vector>
@@ -26,7 +27,8 @@ public:
 	
 	configuration(const char* path);
 	
-	tradfri::system::configuration tradfri_configuration() const;
+	ikea::tradfri::configuration tradfri_configuration() const;
+	ikea::dirigera::configuration dirigera_configuration() const;
 	int port() const;
 	std::map<std::string, std::vector<std::string>> groups() const;
 	std::map<homelink::device_state, operation> commands() const;
@@ -37,9 +39,9 @@ private:
 	std::map<std::string, operation> operations() const;
 	operation get_operation(std::string const& name) const;
 	
-	json                                   m_json;
+	json                                       m_json;
 	std::map<std::string, homelink::device_id> m_devices;
-	std::map<std::string, operation>       m_operations;
+	std::map<std::string, operation>           m_operations;
 	
 };
 

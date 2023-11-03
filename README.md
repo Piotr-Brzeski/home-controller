@@ -10,9 +10,14 @@ or [NinjaGen](https://github.com/Piotr-Brzeski/NinjaGen) to generate ninja build
 Example of configuration file:
 ```
 {
+	"dirigera":
+	{
+		"address": "127.0.0.2",
+		"access_token": "klucz"
+	},
 	"tradfri":
 	{
-		"address": "127.0.0.1",
+		"address": "127.0.0.3",
 		"identity": "name",
 		"key": "klucz"
 	},

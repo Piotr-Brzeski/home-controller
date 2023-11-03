@@ -67,12 +67,20 @@ configuration::configuration(const char* path)
 {
 }
 
-tradfri::system::configuration configuration::tradfri_configuration() const {
-	tradfri::system::configuration system_configuration;
+ikea::tradfri::configuration configuration::tradfri_configuration() const {
+	ikea::tradfri::configuration system_configuration;
 	auto tradfri_config = m_json["tradfri"];
 	system_configuration.ip = tradfri_config["address"].get_string();
 	system_configuration.identity = tradfri_config["identity"].get_string();
 	system_configuration.key = tradfri_config["key"].get_string();
+	return system_configuration;
+}
+
+ikea::dirigera::configuration configuration::dirigera_configuration() const {
+	ikea::dirigera::configuration system_configuration;
+	auto dirigera_config = m_json["dirigera"];
+	system_configuration.ip = dirigera_config["address"].get_string();
+	system_configuration.access_token = dirigera_config["access_token"].get_string();
 	return system_configuration;
 }
 
