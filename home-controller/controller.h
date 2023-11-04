@@ -17,21 +17,24 @@
 
 namespace home {
 
+template<class ikea_system1_t, class ikea_system2_t>
 class controller {
 public:
 	controller(const char* configuration_path);
-	void start();
-	void wait();
+	
+	void start() {
+		auto port = m_configuration.port();
+		m_controller.start(port);
+	}
+	void wait() {
+		m_controller.wait();
+	}
 	
 private:
-	group create_group(std::vector<std::string> const& devices);
-	group* get_group(std::string const& name);
-	std::function<void()> get_operation(configuration::operation const& operation);
-	
-	configuration                               m_configuration;
-	ikea::system<ikea::dirigera, ikea::tradfri> m_ikea_system;
-	homelink::controller                        m_controller;
-	std::map<std::string, group>                m_groups;
+	configuration                                m_configuration;
+	ikea::system<ikea_system1_t, ikea_system2_t> m_ikea_system;
+	homelink::controller                         m_controller;
+	std::map<std::string, group>                 m_groups;
 };
 
 }

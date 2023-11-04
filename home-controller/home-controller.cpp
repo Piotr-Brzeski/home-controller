@@ -20,7 +20,8 @@ auto start_controller(const char* configuration_path) {
 			std::this_thread::sleep_for(wait_time);
 		}
 		try {
-			auto controller = std::make_unique<home::controller>(configuration_path);
+//			auto controller = std::make_unique<home::controller<ikea::dirigera, ikea::tradfri>>(configuration_path);
+			auto controller = std::make_unique<home::controller<ikea::dirigera, ikea::no_system>>(configuration_path);
 			controller->start();
 			return controller;
 		}

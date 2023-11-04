@@ -17,6 +17,8 @@ using namespace home;
 
 namespace {
 
+using groups_t = std::map<std::string, group>;
+
 class groups_updater {
 public:
 	groups_updater(std::map<std::string, group>& groups)
@@ -38,60 +40,35 @@ public:
 	}
 	
 private:
-	std::map<std::string, group>&          m_groups;
-	std::map<std::string, group>::iterator m_group_it;
+	groups_t&          m_groups;
+	groups_t::iterator m_group_it;
 };
 
-}
-
-controller::controller(const char* configuration_path)
-	: m_configuration(configuration_path)
-	, m_ikea_system(m_configuration.dirigera_configuration(), m_configuration.tradfri_configuration())
-{
-	m_ikea_system.enumerate_devices();
-	auto groups = m_configuration.groups();
-	for(auto& group_definition : groups) {
-		m_groups.emplace(group_definition.first, create_group(group_definition.second));
-	}
-	auto commands = m_configuration.commands();
-	for(auto& command : commands) {
-		m_controller.add(command.first, get_operation(command.second));
-	}
-	m_controller.set_periodic_task(groups_updater(m_groups), std::chrono::seconds(100));
-}
-
-void controller::start() {
-	auto port = m_configuration.port();
-	m_controller.start(port);
-}
-
-void controller::wait() {
-	m_controller.wait();
-}
-
-group controller::create_group(std::vector<std::string> const& devices) {
+template<class system_t>
+group create_group(system_t& system, std::vector<std::string> const& devices) {
 	auto devices_group = group();
-	std::ranges::for_each(devices, [this, &devices_group](auto& device_name) {
+	std::ranges::for_each(devices, [&system, &devices_group](auto& device_name) {
 		devices_group.add({
-			m_ikea_system.brightness_operation(device_name),
-			m_ikea_system.set_operation(device_name),
-			m_ikea_system.increase_operation(device_name),
-			m_ikea_system.decrease_operation(device_name)
+			system.brightness_operation(device_name),
+			system.set_operation(device_name),
+			system.increase_operation(device_name),
+			system.decrease_operation(device_name)
 		});
 	});
 	return devices_group;
 }
 
-group* controller::get_group(std::string const& name) {
-	auto it = m_groups.find(name);
-	if(it != m_groups.end()) {
+group* get_group(groups_t& groups, std::string const& name) {
+	auto it = groups.find(name);
+	if(it != groups.end()) {
 		return &it->second;
 	}
 	return nullptr;
 }
 
-std::function<void()> controller::get_operation(configuration::operation const& operation) {
-	auto group = get_group(operation.device);
+template<class system_t>
+std::function<void()> get_operation(system_t& system, groups_t& groups, configuration::operation const& operation) {
+	group* group = get_group(groups, operation.device);
 	if(group) {
 		if(operation.type == "toggle") {
 			return [group](){ group->toggle(); };
@@ -105,13 +82,45 @@ std::function<void()> controller::get_operation(configuration::operation const& 
 		throw exception("Invalid operation type: \"" + operation.type + "\".");
 	}
 	if(operation.type == "toggle") {
-		return m_ikea_system.toggle_operation(operation.device);
+		return system.toggle_operation(operation.device);
 	}
 	if(operation.type == "increase") {
-		return m_ikea_system.increase_operation(operation.device);
+		return system.increase_operation(operation.device);
 	}
 	if(operation.type == "decrease") {
-		return m_ikea_system.decrease_operation(operation.device);
+		return system.decrease_operation(operation.device);
 	}
 	throw exception("Invalid operation type: \"" + operation.type + "\".");
+}
+
+template<class system_t>
+void init(system_t& system, groups_t& groups, homelink::controller& controller, configuration const& config) {
+	system.enumerate_devices();
+	auto groups_definition = config.groups();
+	for(auto& group_definition : groups_definition) {
+		groups.emplace(group_definition.first, create_group(system, group_definition.second));
+	}
+	auto commands = config.commands();
+	for(auto& command : commands) {
+		controller.add(command.first, get_operation(system, groups, command.second));
+	}
+	//	m_controller.set_periodic_task(groups_updater(m_groups), std::chrono::seconds(100));
+}
+
+}
+
+template<>
+controller<ikea::dirigera, ikea::tradfri>::controller(const char* configuration_path)
+	: m_configuration(configuration_path)
+	, m_ikea_system(m_configuration.dirigera_configuration(), m_configuration.tradfri_configuration())
+{
+	init(m_ikea_system, m_groups, m_controller, m_configuration);
+}
+
+template<>
+controller<ikea::dirigera, ikea::no_system>::controller(const char* configuration_path)
+	: m_configuration(configuration_path)
+	, m_ikea_system(m_configuration.dirigera_configuration(), {})
+{
+	init(m_ikea_system, m_groups, m_controller, m_configuration);
 }
