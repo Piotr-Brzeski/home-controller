@@ -20,3 +20,6 @@
 	path = cpp-ikea
 	url = https://github.com/Piotr-Brzeski/cpp-ikea.git
 	branch = dirigera
+[submodule "curl-ws"]
+	path = curl-ws
+	url = https://github.com/Piotr-Brzeski/curl-ws.git

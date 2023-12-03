@@ -2,6 +2,8 @@ targets:
   home-controller:
     platform: macOS
     type: tool
+    templates:
+      - link-curl-ws
     dependencies:
       - target: home-link
         link: true
@@ -22,9 +24,13 @@ targets:
         - ${SRCROOT}/cpp-network
         - ${SRCROOT}/cpp-data-format
         - ${SRCROOT}/cpp-log
-      LIBRARY_SEARCH_PATHS: /opt/homebrew/lib
-      OTHER_LDFLAGS: -lcoap-3-openssl -lssl -lcurl
-      _LINUX_OTHER_LDFLAGS: -lcoap-3-gnutls -lcurl
+      LIBRARY_SEARCH_PATHS:
+        - /opt/homebrew/lib
+      OTHER_LDFLAGS:
+        -lcoap-3-openssl
+      _LINUX_OTHER_LDFLAGS:
+        -lcoap-3-gnutls
+        -lcurl
     sources:
       - path: configuration.cpp
         group: home-controller

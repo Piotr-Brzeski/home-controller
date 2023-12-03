@@ -22,6 +22,7 @@ settings:
     ENABLE_USER_SCRIPT_SANDBOXING: true
 
 include:
+  - curl-ws/curl-ws.yml
   - home-controller/home-controller.yml
   - cpp-network/cpp-network/cpp-network.yml
   - cpp-data-format/data-format/data-format.yml
