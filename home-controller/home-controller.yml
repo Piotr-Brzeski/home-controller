@@ -1,9 +1,16 @@
+targetTemplates:
+  link-coap:
+    settings:
+      OTHER_LDFLAGS:
+        - -lcoap-3-openssl
+        - -lssl
 targets:
   home-controller:
     platform: macOS
     type: tool
     templates:
       - link-curl-ws
+      - link-coap
     dependencies:
       - target: home-link
         link: true
@@ -26,8 +33,6 @@ targets:
         - ${SRCROOT}/cpp-log
       LIBRARY_SEARCH_PATHS:
         - /opt/homebrew/lib
-      OTHER_LDFLAGS:
-        -lcoap-3-openssl
       _LINUX_OTHER_LDFLAGS:
         -lcoap-3-gnutls
         -lcurl
