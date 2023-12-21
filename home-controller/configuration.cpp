@@ -84,6 +84,14 @@ ikea::dirigera::configuration configuration::dirigera_configuration() const {
 	return system_configuration;
 }
 
+mqtt_system::configuration configuration::mqtt_configuration() const {
+	mqtt_system::configuration system_configuration;
+	auto mqtt_config = m_json["mqtt"];
+	system_configuration.address = mqtt_config["address"].get_string();
+	system_configuration.queue_name = mqtt_config["queue_name"].get_string();
+	return system_configuration;
+}
+
 int configuration::port() const {
 	return m_json["link"]["port"].get_int();
 }

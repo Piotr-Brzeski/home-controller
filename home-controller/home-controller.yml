@@ -4,6 +4,10 @@ targetTemplates:
       OTHER_LDFLAGS:
         - -lcoap-3-openssl
         - -lssl
+  link-mosquitto:
+    settings:
+      OTHER_LDFLAGS:
+        - -lmosquitto
 targets:
   home-controller:
     platform: macOS
@@ -11,6 +15,7 @@ targets:
     templates:
       - link-curl-ws
       - link-coap
+      - link-mosquitto
     dependencies:
       - target: home-link
         link: true
@@ -26,6 +31,7 @@ targets:
         link: true
     settings:
       HEADER_SEARCH_PATHS:
+        - /opt/homebrew/include
         - ${SRCROOT}/home-link
         - ${SRCROOT}/cpp-ikea
         - ${SRCROOT}/cpp-network
@@ -58,5 +64,20 @@ targets:
       - path: home-controller.cpp
         group: home-controller
       - path: json.h
+        group: home-controller
+        buildPhase: none
+      - path: mqtt.cpp
+        group: home-controller
+      - path: mqtt.h
+        group: home-controller
+        buildPhase: none
+      - path: mqtt_bulb.cpp
+        group: home-controller
+      - path: mqtt_bulb.h
+        group: home-controller
+        buildPhase: none
+      - path: mqtt_system.cpp
+        group: home-controller
+      - path: mqtt_system.h
         group: home-controller
         buildPhase: none

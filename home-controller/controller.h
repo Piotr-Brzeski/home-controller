@@ -10,6 +10,7 @@
 
 #include "configuration.h"
 #include "group.h"
+#include "mqtt_system.h"
 #include <cpp-ikea/system.h>
 #include <home-link/controller.h>
 #include <string>
@@ -17,7 +18,7 @@
 
 namespace home {
 
-template<class ikea_system1_t, class ikea_system2_t>
+template<class ikea_system_t>
 class controller {
 public:
 	controller(const char* configuration_path);
@@ -31,10 +32,11 @@ public:
 	}
 	
 private:
-	configuration                                m_configuration;
-	ikea::system<ikea_system1_t, ikea_system2_t> m_ikea_system;
-	homelink::controller                         m_controller;
-	std::map<std::string, group>                 m_groups;
+	configuration                m_configuration;
+	mqtt_system                  m_mqtt_system;
+	ikea_system_t                m_ikea_system;
+	homelink::controller         m_controller;
+	std::map<std::string, group> m_groups;
 };
 
 }

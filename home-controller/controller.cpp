@@ -9,6 +9,7 @@
 #include "controller.h"
 #include "json.h"
 #include "exception.h"
+#include "mqtt_system.h"
 #include <algorithm>
 #include <fstream>
 #include <memory>
@@ -42,6 +43,54 @@ public:
 private:
 	groups_t&          m_groups;
 	groups_t::iterator m_group_it;
+};
+
+template<class system1_t, class system2_t>
+class two_systems {
+public:
+	two_systems(system1_t& system1, system2_t& system2)
+		: system1(system1)
+		, system2(system2)
+	{
+	}
+	void enumerate_devices() {
+		system1.enumerate_devices();
+		system2.enumerate_devices();
+	}
+	std::function<std::uint8_t()> brightness_operation(std::string const& device_name) {
+		if(system1.is_device(device_name)) {
+			return system1.brightness_operation(device_name);
+		}
+		return system2.brightness_operation(device_name);
+	}
+	std::function<void(bool)> set_operation(std::string const& device_name) {
+		if(system1.is_device(device_name)) {
+			return system1.set_operation(device_name);
+		}
+		return system2.set_operation(device_name);
+	}
+	std::function<void()> toggle_operation(std::string const& device_name) {
+		if(system1.is_device(device_name)) {
+			return system1.toggle_operation(device_name);
+		}
+		return system2.toggle_operation(device_name);
+	}
+	std::function<void()> increase_operation(std::string const& device_name) {
+		if(system1.is_device(device_name)) {
+			return system1.increase_operation(device_name);
+		}
+		return system2.increase_operation(device_name);
+	}
+	std::function<void()> decrease_operation(std::string const& device_name) {
+		if(system1.is_device(device_name)) {
+			return system1.decrease_operation(device_name);
+		}
+		return system2.decrease_operation(device_name);
+	}
+	
+private:
+	system1_t& system1;
+	system2_t& system2;
 };
 
 template<class system_t>
@@ -110,17 +159,21 @@ void init(system_t& system, groups_t& groups, homelink::controller& controller, 
 }
 
 template<>
-controller<ikea::dirigera, ikea::tradfri>::controller(const char* configuration_path)
+controller<ikea::system<ikea::dirigera, ikea::tradfri>>::controller(const char* configuration_path)
 	: m_configuration(configuration_path)
+	, m_mqtt_system(m_configuration.mqtt_configuration())
 	, m_ikea_system(m_configuration.dirigera_configuration(), m_configuration.tradfri_configuration())
 {
-	init(m_ikea_system, m_groups, m_controller, m_configuration);
+	auto systems = two_systems(m_mqtt_system, m_ikea_system);
+	init(systems, m_groups, m_controller, m_configuration);
 }
 
 template<>
-controller<ikea::dirigera, ikea::no_system>::controller(const char* configuration_path)
+controller<ikea::system<ikea::dirigera, ikea::no_system>>::controller(const char* configuration_path)
 	: m_configuration(configuration_path)
+	, m_mqtt_system(m_configuration.mqtt_configuration())
 	, m_ikea_system(m_configuration.dirigera_configuration(), {})
 {
-	init(m_ikea_system, m_groups, m_controller, m_configuration);
+		auto systems = two_systems(m_mqtt_system, m_ikea_system);
+		init(systems, m_groups, m_controller, m_configuration);
 }

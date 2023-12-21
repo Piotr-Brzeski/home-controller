@@ -8,10 +8,11 @@
 
 #pragma once
 
+#include "json.h"
+#include "mqtt_system.h"
 #include <cpp-ikea/tradfri.h>
 #include <cpp-ikea/dirigera.h>
 #include <home-link/types.h>
-#include "json.h"
 #include <vector>
 #include <map>
 #include <string>
@@ -29,6 +30,7 @@ public:
 	
 	ikea::tradfri::configuration tradfri_configuration() const;
 	ikea::dirigera::configuration dirigera_configuration() const;
+	mqtt_system::configuration mqtt_configuration() const;
 	int port() const;
 	std::map<std::string, std::vector<std::string>> groups() const;
 	std::map<homelink::device_state, operation> commands() const;

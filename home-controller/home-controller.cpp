@@ -7,6 +7,7 @@
 //
 
 #include "controller.h"
+#include "mqtt_system.h"
 #include <cpp-log/log.h>
 #include <chrono>
 #include <thread>
@@ -21,7 +22,7 @@ auto start_controller(const char* configuration_path) {
 		}
 		try {
 //			auto controller = std::make_unique<home::controller<ikea::dirigera, ikea::tradfri>>(configuration_path);
-			auto controller = std::make_unique<home::controller<ikea::dirigera, ikea::no_system>>(configuration_path);
+			auto controller = std::make_unique<home::controller<ikea::system<ikea::dirigera, ikea::no_system>>>(configuration_path);
 			controller->start();
 			return controller;
 		}
