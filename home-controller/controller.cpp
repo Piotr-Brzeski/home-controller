@@ -87,6 +87,13 @@ public:
 		}
 		return system2.decrease_operation(device_name);
 	}
+	std::function<void()> update_operation(std::string const& device_name) {
+		if(system1.is_device(device_name)) {
+			return system1.update_operation(device_name);
+		}
+		// TODO: Add update_operation to the ikea systems
+		return system2.brightness_operation(device_name);
+	}
 	
 private:
 	system1_t& system1;
@@ -101,7 +108,8 @@ group create_group(system_t& system, std::vector<std::string> const& devices) {
 			system.brightness_operation(device_name),
 			system.set_operation(device_name),
 			system.increase_operation(device_name),
-			system.decrease_operation(device_name)
+			system.decrease_operation(device_name),
+			system.update_operation(device_name)
 		});
 	});
 	return devices_group;
@@ -153,7 +161,7 @@ void init(system_t& system, groups_t& groups, homelink::controller& controller, 
 	for(auto& command : commands) {
 		controller.add(command.first, get_operation(system, groups, command.second));
 	}
-	//	m_controller.set_periodic_task(groups_updater(m_groups), std::chrono::seconds(100));
+	controller.set_periodic_task(groups_updater(groups), std::chrono::seconds(10));
 }
 
 }

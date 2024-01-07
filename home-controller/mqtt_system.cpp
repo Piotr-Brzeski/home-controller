@@ -100,6 +100,11 @@ std::function<void()> mqtt_system::decrease_operation(std::string const& device_
 	return [&device](){ device.decrease(); };
 }
 
+std::function<void()> mqtt_system::update_operation(std::string const& device_name) {
+	auto& device = get_device(device_name);
+	return [&device](){ device.trigger_update(); };
+}
+
 mqtt_bulb& mqtt_system::get_device(std::string const& name) {
 	for(auto& device : m_bulbs) {
 		if(device->name() == name) {

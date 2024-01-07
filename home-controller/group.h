@@ -21,6 +21,7 @@ public:
 		std::function<void(bool)> const     set;
 		std::function<void()> const         increase;
 		std::function<void()> const         decrease;
+		std::function<void()> const         update;
 	};
 	
 	group()

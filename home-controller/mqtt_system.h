@@ -32,6 +32,7 @@ public:
 	std::function<void()> toggle_operation(std::string const& device_name);
 	std::function<void()> increase_operation(std::string const& device_name);
 	std::function<void()> decrease_operation(std::string const& device_name);
+    std::function<void()> update_operation(std::string const& device_name);
 	
 private:
 	mqtt_bulb& get_device(std::string const& name);
