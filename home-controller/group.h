@@ -15,8 +15,11 @@ namespace home {
 
 class group {
 public:
-	void add(bulb* new_member) {
-		m_members.push_back(new_member);
+	using bulb_get = std::function<std::uint8_t()>;
+	using bulb_set = std::function<void(std::uint8_t)>;
+
+	void add(bulb_get get, bulb_set set) {
+		m_members.push_back({get, set});
 	}
 	
 	void toggle();
@@ -24,7 +27,11 @@ public:
 	void decrease();
 	
 private:
-	std::vector<bulb*> m_members;
+	struct bulb_operations {
+			bulb_get get;
+			bulb_set set;
+	};
+	std::vector<bulb_operations> m_members;
 	
 };
 

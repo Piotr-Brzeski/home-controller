@@ -8,6 +8,7 @@
 
 #include "controller.h"
 #include "exception.h"
+#include <algorithm>
 
 using namespace home;
 
@@ -16,12 +17,22 @@ controller::controller(const char* configuration_path)
 {
 	// systems
 	m_systems.add(std::make_unique<mqtt_system>(m_configuration.mqtt_configuration()));
-	// groups
+	auto bulb_names = std::vector<std::string>();
 	auto groups_definition = m_configuration.groups();
 	for(auto& group_definition : groups_definition) {
 		auto devices_group = group();
 		for(auto& device_name : group_definition.second) {
-			devices_group.add(m_systems.get(device_name));
+			bulb_names.push_back(device_name);
+		}
+	}
+	std::ranges::sort(bulb_names);
+	bulb_names.erase(std::unique(bulb_names.begin(), bulb_names.end()), bulb_names.end());
+	m_systems.start(bulb_names);
+	// groups
+	for(auto& group_definition : groups_definition) {
+		auto devices_group = group();
+		for(auto& device_name : group_definition.second) {
+			devices_group.add(m_systems.bulb_getter(device_name), m_systems.bulb_setter(device_name));
 		}
 		m_groups.emplace(group_definition.first, std::move(devices_group));
 	}

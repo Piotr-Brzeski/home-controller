@@ -42,19 +42,27 @@ void systems::start(const std::vector<std::string> &bulb_names) {
 	}
 }
 
+systems::bulb_get systems::bulb_getter(const std::string &name) {
+	return [bulb = get(name)]() {
+		return bulb->brightness();
+	};
+}
+
+systems::bulb_set systems::bulb_setter(const std::string &name) {
+	return [this, bulb = get(name)](std::uint8_t brightness) {
+		static constexpr auto timeout = std::chrono::milliseconds(700);
+		auto cmd = [bulb, brightness]() {
+			bulb->set(brightness);
+		};
+		m_commands.execute_and_set(bulb, cmd, std::chrono::steady_clock::now() + timeout);
+
+	};
+}
+
 bulb* systems::get(std::string const& name) {
 	auto it = m_bulbs.find(name);
 	assert(it != m_bulbs.end());
 	return it->second.get();
-}
-
-void systems::set(const std::string &name, std::uint8_t brightness) {
-	static constexpr auto timeout = std::chrono::milliseconds(500);
-	auto bulb = get(name);
-	auto cmd = [bulb, brightness]() {
-		bulb->set(brightness);
-	};
-	m_commands.execute_and_set(bulb, cmd, std::chrono::steady_clock::now() + timeout);
 }
 
 void systems::update(const std::string &name, std::uint8_t brightness) {
