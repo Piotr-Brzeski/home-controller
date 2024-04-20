@@ -3,22 +3,20 @@
 //  home-controller
 //
 //  Created by Piotr Brzeski on 2023-01-20.
-//  Copyright © 2023 Brzeski.net. All rights reserved.
+//  Copyright © 2023-2024 Brzeski.net. All rights reserved.
 //
 
 #pragma once
 
 #include "configuration.h"
+#include "systems.h"
 #include "group.h"
-#include "mqtt_system.h"
-#include <cpp-ikea/system.h>
 #include <home-link/controller.h>
 #include <string>
 #include <map>
 
 namespace home {
 
-template<class ikea_system_t>
 class controller {
 public:
 	controller(const char* configuration_path);
@@ -32,9 +30,10 @@ public:
 	}
 	
 private:
+	group* get_group(std::string const& name);
+	
 	configuration                m_configuration;
-	mqtt_system                  m_mqtt_system;
-	ikea_system_t                m_ikea_system;
+	systems                      m_systems;
 	homelink::controller         m_controller;
 	std::map<std::string, group> m_groups;
 };

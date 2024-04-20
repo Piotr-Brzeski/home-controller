@@ -3,11 +3,10 @@
 //  home-controller
 //
 //  Created by Piotr Brzeski on 2023-05-27.
-//  Copyright © 2023 Brzeski.net. All rights reserved.
+//  Copyright © 2023-2024 Brzeski.net. All rights reserved.
 //
 
 #include "controller.h"
-#include "mqtt_system.h"
 #include <cpp-log/log.h>
 #include <chrono>
 #include <thread>
@@ -21,8 +20,7 @@ auto start_controller(const char* configuration_path) {
 			std::this_thread::sleep_for(wait_time);
 		}
 		try {
-//			auto controller = std::make_unique<home::controller<ikea::dirigera, ikea::tradfri>>(configuration_path);
-			auto controller = std::make_unique<home::controller<ikea::system<ikea::dirigera, ikea::no_system>>>(configuration_path);
+			auto controller = std::make_unique<home::controller>(configuration_path);
 			controller->start();
 			return controller;
 		}

@@ -43,6 +43,16 @@ targets:
         -lcoap-3-gnutls
         -lcurl
     sources:
+      - path: bulb.cpp
+        group: home-controller
+      - path: bulb.h
+        group: home-controller
+        buildPhase: none
+      - path: commands_queue.cpp
+        group: home-controller
+      - path: commands_queue.h
+        group: home-controller
+        buildPhase: none
       - path: configuration.cpp
         group: home-controller
       - path: configuration.h
@@ -71,13 +81,16 @@ targets:
       - path: mqtt.h
         group: home-controller
         buildPhase: none
-      - path: mqtt_bulb.cpp
-        group: home-controller
-      - path: mqtt_bulb.h
-        group: home-controller
-        buildPhase: none
       - path: mqtt_system.cpp
         group: home-controller
       - path: mqtt_system.h
+        group: home-controller
+        buildPhase: none
+      - path: system_base.h
+        group: home-controller
+        buildPhase: none
+      - path: systems.cpp
+        group: home-controller
+      - path: systems.h
         group: home-controller
         buildPhase: none

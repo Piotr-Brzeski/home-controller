@@ -10,8 +10,8 @@
 
 #include "json.h"
 #include "mqtt_system.h"
-#include <cpp-ikea/tradfri.h>
-#include <cpp-ikea/dirigera.h>
+//#include <cpp-ikea/tradfri.h>
+//#include <cpp-ikea/dirigera.h>
 #include <home-link/types.h>
 #include <vector>
 #include <map>
@@ -28,8 +28,8 @@ public:
 	
 	configuration(const char* path);
 	
-	ikea::tradfri::configuration tradfri_configuration() const;
-	ikea::dirigera::configuration dirigera_configuration() const;
+//	ikea::tradfri::configuration tradfri_configuration() const;
+//	ikea::dirigera::configuration dirigera_configuration() const;
 	mqtt_system::configuration mqtt_configuration() const;
 	int port() const;
 	std::map<std::string, std::vector<std::string>> groups() const;
