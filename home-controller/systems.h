@@ -21,19 +21,19 @@ namespace home {
 
 class systems {
 public:
-    using bulb_get = std::function<std::uint8_t()>;
-    using bulb_set = std::function<void(std::uint8_t)>;
-    
+	using bulb_get = std::function<std::uint8_t()>;
+	using bulb_set = std::function<void(std::uint8_t)>;
+
 	void add(std::unique_ptr<system_base> system);
 	void start(std::vector<std::string> const& bulb_names);
-    
-    bulb_get bulb_getter(std::string const& name);
-    bulb_set bulb_setter(std::string const& name);
-	
+
+	bulb_get bulb_getter(std::string const& name);
+	bulb_set bulb_setter(std::string const& name);
+
 private:
-    bulb* get(std::string const& name);
+	bulb* get(std::string const& name);
 	void update(std::string const& name, std::uint8_t brightness);
-	
+
 	std::map<std::string, std::unique_ptr<bulb>> m_bulbs;
 	std::vector<std::unique_ptr<system_base>>    m_systems;
 	commands_queue                               m_commands;

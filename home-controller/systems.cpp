@@ -55,7 +55,6 @@ systems::bulb_set systems::bulb_setter(const std::string &name) {
 			bulb->set(brightness);
 		};
 		m_commands.execute_and_set(bulb, cmd, std::chrono::steady_clock::now() + timeout);
-
 	};
 }
 

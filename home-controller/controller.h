@@ -14,6 +14,7 @@
 #include <home-link/controller.h>
 #include <string>
 #include <map>
+#include <memory>
 
 namespace home {
 
@@ -32,10 +33,10 @@ public:
 private:
 	group* get_group(std::string const& name);
 	
-	configuration                m_configuration;
-	systems                      m_systems;
-	homelink::controller         m_controller;
-	std::map<std::string, group> m_groups;
+	configuration                                 m_configuration;
+	systems                                       m_systems;
+	homelink::controller                          m_controller;
+	std::map<std::string, std::unique_ptr<group>> m_groups;
 };
 
 }

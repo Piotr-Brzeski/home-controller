@@ -20,7 +20,6 @@ controller::controller(const char* configuration_path)
 	auto bulb_names = std::vector<std::string>();
 	auto groups_definition = m_configuration.groups();
 	for(auto& group_definition : groups_definition) {
-		auto devices_group = group();
 		for(auto& device_name : group_definition.second) {
 			bulb_names.push_back(device_name);
 		}
@@ -30,9 +29,9 @@ controller::controller(const char* configuration_path)
 	m_systems.start(bulb_names);
 	// groups
 	for(auto& group_definition : groups_definition) {
-		auto devices_group = group();
+		auto devices_group = std::make_unique<group>();
 		for(auto& device_name : group_definition.second) {
-			devices_group.add(m_systems.bulb_getter(device_name), m_systems.bulb_setter(device_name));
+			devices_group->add(m_systems.bulb_getter(device_name), m_systems.bulb_setter(device_name));
 		}
 		m_groups.emplace(group_definition.first, std::move(devices_group));
 	}
@@ -60,5 +59,5 @@ group* controller::get_group(std::string const& name) {
 	if(it == m_groups.end()) {
 		throw exception("Group \"" + name + "\" not found.");
 	}
-	return &(it->second);
+	return it->second.get();
 }
