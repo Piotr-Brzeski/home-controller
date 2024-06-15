@@ -3,7 +3,7 @@
 //  home-controller
 //
 //  Created by Piotr Brzeski on 2023-12-17.
-//  Copyright © 2023 Brzeski.net. All rights reserved.
+//  Copyright © 2023-2024 Brzeski.net. All rights reserved.
 //
 
 #include "mqtt_system.h"
@@ -12,10 +12,6 @@
 #include <array>
 #include <vector>
 #include <cassert>
-/*
-#include <map>
-#include <algorithm>
-*/
 
 #include <iostream>
 
@@ -50,11 +46,9 @@ std::string const& command(std::uint8_t brightness) {
 
 }
 
-mqtt_system::mqtt_system(configuration const& configuration)
-	: m_configuration(configuration)
+mqtt_system::mqtt_system(mqtt_queue::configuration configuration)
+	: mqtt_queue(std::move(configuration))
 {
-	m_publisher.connect(m_configuration.address);
-	m_updater.connect(m_configuration.address);
 	enumerate_devices();
 }
 
@@ -92,12 +86,7 @@ void mqtt_system::start(std::vector<std::string> const& names) {
 	if(!m_callback) {
 		return;
 	}
-	auto channels = std::vector<std::string>();
-	channels.reserve(names.size());
-	for(auto& name : names) {
-		channels.push_back(m_configuration.queue_name + '/' + name);
-	}
-	m_updater.subscribe(channels, std::bind(&mqtt_system::call, this, std::placeholders::_1, std::placeholders::_2));
+	subscribe(names, std::bind(&mqtt_system::call, this, std::placeholders::_1, std::placeholders::_2));
 }
 
 void mqtt_system::ping(std::string const& name) {
@@ -107,11 +96,6 @@ void mqtt_system::ping(std::string const& name) {
 
 void mqtt_system::set(std::string const& name, std::uint8_t brightness) {
 	publish(name, command(brightness));
-}
-
-void mqtt_system::publish(std::string const& name, std::string const& message) {
-	auto channel = m_configuration.queue_name + '/' + name + "/set";
-	m_publisher.publish(channel, message);
 }
 
 void mqtt_system::call(std::string const& channel, std::string message) {
@@ -126,79 +110,3 @@ void mqtt_system::call(std::string const& channel, std::string message) {
 	auto name = channel.substr(m_configuration.address.size());
 	m_callback(name, brightness);
 }
-
-
-
-
-/*
-	auto updaters = std::map<std::string, std::function<void(std::string const&)>>();
-	auto channels = std::vector<std::string>();
-	for(auto& bulb : m_bulbs) {
-		auto& device = *bulb;
-		auto& name = device.name();
-		channels.push_back(m_configuration.queue_name + '/' + name);
-		auto added = updaters.emplace(name, [&device](std::string message){ device.update(std::move(message)); }).second;
-		if(!added) {
-			throw exception("mqtt_system error: can not add updater for device with name \"" + name + "\".");
-		}
-	}
-	auto pos = m_configuration.address.size();
-	m_updater.subscribe(channels, [updaters, pos](std::string channel, std::string message){
-		auto name = channel.substr(pos);
-		auto it = updaters.find(name);
-		if(it != updaters.end()) {
-			it->second(std::move(message));
-		}
-		else {
-			assert(false);
-		}
-	});
-	for(auto& bulb : m_bulbs) {
-		bulb->trigger_update();
-	}
-}
-
-bool mqtt_system::is_device(std::string const& name) const {
-	return std::ranges::find(m_bulbs, name, [](auto& d){ return d->name(); }) != m_bulbs.end();
-}
-
-std::function<void(bool)> mqtt_system::set_operation(std::string const& device_name) {
-	auto& device = get_device(device_name);
-	return [&device](bool enabled){ device.set(enabled); };
-}
-
-std::function<std::uint8_t()> mqtt_system::brightness_operation(std::string const& device_name) {
-	auto& device = get_device(device_name);
-	return [&device](){ return device.brightness(); };
-}
-
-std::function<void()> mqtt_system::toggle_operation(std::string const& device_name) {
-	auto& device = get_device(device_name);
-	return [&device](){ device.toggle(); };
-}
-
-std::function<void()> mqtt_system::increase_operation(std::string const& device_name) {
-	auto& device = get_device(device_name);
-	return [&device](){ device.increase(); };
-}
-
-std::function<void()> mqtt_system::decrease_operation(std::string const& device_name) {
-	auto& device = get_device(device_name);
-	return [&device](){ device.decrease(); };
-}
-
-std::function<void()> mqtt_system::update_operation(std::string const& device_name) {
-	auto& device = get_device(device_name);
-	return [&device](){ device.trigger_update(); };
-}
-
-mqtt_bulb& mqtt_system::get_device(std::string const& name) {
-	for(auto& device : m_bulbs) {
-		if(device->name() == name) {
-			return *device;
-		}
-	}
-	throw exception("mqtt_system error: device with name \"" + name + "\" not found.");
-}
-*/
-
