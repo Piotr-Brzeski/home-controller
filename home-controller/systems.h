@@ -23,9 +23,9 @@ class systems {
 public:
 	using bulb_get = std::function<std::uint8_t()>;
 	using bulb_set = std::function<void(std::uint8_t)>;
-
+	
 	void add(std::unique_ptr<system_base> system);
-	void start(std::vector<std::string> const& bulb_names);
+	void start(std::map<std::string, std::vector<bulb::callback>> const& bulbs);
 
 	bulb_get bulb_getter(std::string const& name);
 	bulb_set bulb_setter(std::string const& name);

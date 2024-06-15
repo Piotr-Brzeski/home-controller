@@ -32,6 +32,10 @@ public:
 	void increase();
 	void decrease();
 	
+	// 0 - 100
+	void set_brigntness(std::uint8_t brightness);
+	std::uint8_t get_brightness();
+	
 private:
 	using clock = std::chrono::steady_clock;
 	
@@ -39,7 +43,7 @@ private:
 		return m_members.size();
 	}
 	
-	void prepare_status();
+	void prepare_status(bool force_get);
 	void send();
 	void send_status();
 	void set(std::size_t index, std::uint8_t brightness);
@@ -58,6 +62,8 @@ private:
 	std::optional<clock::time_point> m_send_time;
 	std::vector<std::uint8_t>        m_status;
 	std::vector<bool>                m_to_set;
+	
+	std::uint8_t                     m_last_set_value = 0;
 	
 };
 

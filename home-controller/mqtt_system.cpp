@@ -98,15 +98,20 @@ void mqtt_system::set(std::string const& name, std::uint8_t brightness) {
 	publish(name, command(brightness));
 }
 
-void mqtt_system::call(std::string const& channel, std::string message) {
-	//	{"brightness":100,"color_mode":"color_temp","color_temp":250,"color_temp_startup":454,"linkquality":248,"power_on_behavior":"previous","state":"ON","update":{"installed_version":587814449,"latest_version":587814449,"state":"idle"}}
-	static auto const brightness_key = std::string("brightness");
-	auto state_json = json(std::move(message));
-	auto raw_brightness_value = state_json.get().get(brightness_key);
-	// TODO: Handle (log) error
-	assert(raw_brightness_value);
-	auto raw_brightness = raw_brightness_value->get_int();
-	auto brightness = brightness_from_raw(raw_brightness);
-	auto name = channel.substr(m_configuration.address.size());
-	m_callback(name, brightness);
+void mqtt_system::call(std::string const& name, std::string message) {
+	try {
+		//	{"brightness":100,"color_mode":"color_temp","color_temp":250,"color_temp_startup":454,"linkquality":248,"power_on_behavior":"previous","state":"ON","update":{"installed_version":587814449,"latest_version":587814449,"state":"idle"}}
+		static auto const brightness_key = std::string("brightness");
+		auto state_json = json(std::move(message));
+		auto raw_brightness_value = state_json.get().get(brightness_key);
+		// TODO: Handle (log) error
+		assert(raw_brightness_value);
+		auto raw_brightness = raw_brightness_value->get_int();
+		auto brightness = brightness_from_raw(raw_brightness);
+		m_callback(name, brightness);
+	}
+	catch(...) {
+		// TODO: Log error
+		assert(false);
+	}
 }

@@ -18,8 +18,9 @@ namespace home {
 class homekit : public mqtt_queue {
 public:
 	using mqtt_queue::mqtt_queue;
+	using callback_t = std::function<void(std::string const&, std::uint8_t)>;
 	
-	void start(std::vector<std::string> names, mqtt::callback_t callback);
+	void start(std::vector<std::string> names, callback_t callback);
 	void send_update(std::string const& name, std::uint8_t brightness);
 };
 

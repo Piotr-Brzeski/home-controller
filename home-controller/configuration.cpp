@@ -14,7 +14,6 @@ using namespace home;
 
 namespace {
 
-
 std::string load_file(const char* path) {
 	auto content = std::string();
 	auto stream = std::ifstream(path);
@@ -85,11 +84,11 @@ configuration::configuration(const char* path)
 //}
 
 mqtt_system::configuration configuration::mqtt_configuration() const {
-	mqtt_system::configuration system_configuration;
-	auto mqtt_config = m_json["mqtt"];
-	system_configuration.address = mqtt_config["address"].get_string();
-	system_configuration.queue_name = mqtt_config["queue_name"].get_string();
-	return system_configuration;
+	return mqtt_config("mqtt");
+}
+
+mqtt_system::configuration configuration::homekit_configuration() const {
+	return mqtt_config("homekit");
 }
 
 int configuration::port() const {
@@ -184,4 +183,12 @@ std::map<homelink::device_state, configuration::operation> configuration::comman
 		}
 	}
 	return commands;
+}
+
+mqtt_system::configuration configuration::mqtt_config(std::string const& name) const {
+	mqtt_system::configuration config;
+	auto mqtt_config = m_json[name];
+	config.address = mqtt_config["address"].get_string();
+	config.queue_name = mqtt_config["queue_name"].get_string();
+	return config;
 }

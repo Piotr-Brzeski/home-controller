@@ -8,6 +8,7 @@
 
 #include "group.h"
 #include <algorithm>
+#include <numeric>
 #include <cassert>
 
 using namespace home;
@@ -55,56 +56,95 @@ void group::add(bulb_get get, bulb_set set) {
 
 void group::toggle() {
 	auto lock = std::lock_guard(m_mutex);
-	prepare_status();
-	
-	bool is_on = std::ranges::any_of(m_status, [](auto& m){ return m != bulb::zero_brightness; });
-	auto new_brightness = is_on ? bulb::zero_brightness : bulb::max_brightness;
-	for(std::size_t i = 0; i < size(); ++i) {
-		set(i, new_brightness);
+	prepare_status(false);
+	{
+		bool is_on = std::ranges::any_of(m_status, [](auto& m){ return m != bulb::zero_brightness; });
+		auto new_brightness = is_on ? bulb::zero_brightness : bulb::max_brightness;
+		for(std::size_t i = 0; i < size(); ++i) {
+			set(i, new_brightness);
+		}
 	}
 	send();
 }
 
 void group::increase() {
 	auto lock = std::lock_guard(m_mutex);
-	prepare_status();
-	
-	std::size_t index = 0;
-	auto min_brightness = m_status[index];
-	for(std::size_t i = 1; i < size(); ++i) {
-		auto brightness = m_status[i];
-		if(brightness < min_brightness) {
-			min_brightness = brightness;
-			index = i;
+	prepare_status(false);
+	{
+		std::size_t index = 0;
+		auto min_brightness = m_status[index];
+		for(std::size_t i = 1; i < size(); ++i) {
+			auto brightness = m_status[i];
+			if(brightness < min_brightness) {
+				min_brightness = brightness;
+				index = i;
+			}
 		}
-	}
-	if(min_brightness < bulb::max_brightness) {
-		set(index, min_brightness + 1);
+		if(min_brightness < bulb::max_brightness) {
+			set(index, min_brightness + 1);
+		}
 	}
 	send();
 }
 
 void group::decrease() {
 	auto lock = std::lock_guard(m_mutex);
-	prepare_status();
-	assert(size() > 0);
-	std::size_t index = size() - 1;
-	auto max_brightness = m_status[index];
-	for(auto i = index - 1; i < size(); --i) {
-		auto brightness = m_status[i];
-		if(brightness > max_brightness) {
-			max_brightness = brightness;
-			index = i;
+	prepare_status(false);
+	{
+		assert(size() > 0);
+		std::size_t index = size() - 1;
+		auto max_brightness = m_status[index];
+		for(auto i = index - 1; i < size(); --i) {
+			auto brightness = m_status[i];
+			if(brightness > max_brightness) {
+				max_brightness = brightness;
+				index = i;
+			}
 		}
-	}
-	if(max_brightness > bulb::zero_brightness) {
-		set(index, max_brightness - 1);
+		if(max_brightness > bulb::zero_brightness) {
+			set(index, max_brightness - 1);
+		}
 	}
 	send();
 }
 
-void group::prepare_status() {
-	if(!m_send_time && clock::now() - m_last_set > timeout) {
+// 0 - 100
+void group::set_brigntness(std::uint8_t brightness) {
+	if(brightness > 100) {
+		assert(false);
+		brightness = 100;
+	}
+	auto lock = std::lock_guard(m_mutex);
+	prepare_status(false);
+	{
+		auto max = size() * bulb::max_brightness;
+		auto new_brightness = std::round(brightness/100.0 * max);
+		auto low_value = static_cast<std::uint8_t>(new_brightness / size());
+		auto number_of_high_digits = static_cast<std::size_t>(new_brightness) % size();
+		auto new_bulb_brightness = std::vector<std::uint8_t>(number_of_high_digits, low_value + 1);
+		new_bulb_brightness.resize(size(), low_value);
+		for(auto i = 0U; i < size(); ++i) {
+			set(i, new_bulb_brightness[i]);
+		}
+	}
+	send();
+}
+
+std::uint8_t group::get_brightness() {
+	auto lock = std::lock_guard(m_mutex);
+	prepare_status(true);
+	{
+		auto sum = std::reduce(m_status.begin(), m_status.end());
+		auto max = size() * bulb::max_brightness;
+		auto brightness = 100.0 * sum / max;
+		auto result = static_cast<std::uint8_t>(brightness);
+		assert(result <= 100);
+		return result;
+	}
+}
+
+void group::prepare_status(bool force_get) {
+	if(force_get || (!m_send_time && clock::now() - m_last_set > timeout)) {
 		for(std::size_t i = 0; i < m_members.size(); ++i) {
 			m_status[i] = m_members[i].get();
 			m_to_set[i] = false;

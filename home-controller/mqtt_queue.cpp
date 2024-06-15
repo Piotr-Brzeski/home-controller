@@ -28,5 +28,8 @@ void mqtt_queue::subscribe(std::vector<std::string> const& channel_names, mqtt::
 	for(auto& channel_name : channel_names) {
 		channels.push_back(m_configuration.queue_name + '/' + channel_name);
 	}
-	m_updater.subscribe(channels, callback);
+	m_updater.subscribe(channels, [callback, this](std::string const& channel, std::string const& message) {
+		auto name = channel.substr(m_configuration.queue_name.size() + 1);
+		callback(name, message);
+	});
 }

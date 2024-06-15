@@ -8,6 +8,8 @@
 
 #include "systems.h"
 #include <chrono>
+#include <algorithm>
+#include <iterator>
 #include <cassert>
 
 using namespace home;
@@ -17,20 +19,22 @@ void systems::add(std::unique_ptr<system_base> system) {
 	m_systems.push_back(std::move(system));
 }
 
-void systems::start(const std::vector<std::string> &bulb_names) {
+void systems::start(std::map<std::string, std::vector<bulb::callback>> const& bulbs) {
 	auto bulb_systems = std::map<system_base*, std::vector<std::string>>();
-	for(auto& name : bulb_names) {
+	for(auto& bulb_config : bulbs) {
+		auto const& bulb_name = bulb_config.first;
 		system_base* system_with_bulb = nullptr;
 		for(auto& system : m_systems) {
-			if(system->get_device_type(name) == device_type::bulb) {
+			if(system->get_device_type(bulb_name) == device_type::bulb) {
 				system_with_bulb = system.get();
 				break;
 			}
 		}
 		// TODO: throw
 		assert(system_with_bulb != nullptr);
-		bulb_systems[system_with_bulb].push_back(name);
-		m_bulbs.emplace(name, std::make_unique<bulb>(name, *system_with_bulb));
+		bulb_systems[system_with_bulb].push_back(bulb_name);
+		auto const& bulb_update_callbacks = bulb_config.second;
+		m_bulbs.emplace(bulb_name, std::make_unique<bulb>(bulb_name, *system_with_bulb, bulb_update_callbacks));
 	}
 	for(auto bulb_system : bulb_systems) {
 		auto system = bulb_system.first;
