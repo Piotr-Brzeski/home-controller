@@ -83,12 +83,12 @@ configuration::configuration(const char* path)
 //	return system_configuration;
 //}
 
-mqtt_system::configuration configuration::mqtt_configuration() const {
-	return mqtt_config("mqtt");
+mqtt_config configuration::mqtt_configuration() const {
+	return mqtt_configuration("mqtt");
 }
 
-mqtt_system::configuration configuration::homekit_configuration() const {
-	return mqtt_config("homekit");
+mqtt_config configuration::homekit_configuration() const {
+	return mqtt_configuration("homekit");
 }
 
 int configuration::port() const {
@@ -120,18 +120,22 @@ homelink::device_id configuration::get_device(std::string const& name) const {
 	return it->second;
 }
 
-std::map<std::string, std::vector<std::string>> configuration::groups() const {
-	auto groups = std::map<std::string, std::vector<std::string>>();
+std::map<std::string, configuration::group> configuration::groups() const {
+	auto groups = std::map<std::string, configuration::group>();
 	auto json_groups = m_json["groups"];
 	for(std::size_t i = 0; i < json_groups.size(); ++i) {
 		auto json_group = json_groups[i];
 		auto name = json_group["name"].get_string();
 		auto json_devices = json_group["devices"];
-		auto devices = std::vector<std::string>();
+		auto config = group();
 		for(std::size_t i = 0; i < json_devices.size(); ++i) {
-			devices.push_back(json_devices[i].get_string());
+			config.devices.push_back(json_devices[i].get_string());
 		}
-		auto added = groups.try_emplace(std::move(name), std::move(devices)).second;
+		auto switch_name = json_group.get("switch");
+		if(switch_name) {
+			config.switch_name = switch_name->get_string();
+		}
+		auto added = groups.try_emplace(std::move(name), config).second;
 		if(!added) {
 			throw exception("Duplicated group name: \"" + name + "\".");
 		}
@@ -185,8 +189,8 @@ std::map<homelink::device_state, configuration::operation> configuration::comman
 	return commands;
 }
 
-mqtt_system::configuration configuration::mqtt_config(std::string const& name) const {
-	mqtt_system::configuration config;
+mqtt_config configuration::mqtt_configuration(std::string const& name) const {
+	mqtt_config config;
 	auto mqtt_config = m_json[name];
 	config.address = mqtt_config["address"].get_string();
 	config.queue_name = mqtt_config["queue_name"].get_string();

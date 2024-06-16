@@ -14,27 +14,33 @@
 
 namespace home {
 
-class mqtt_queue {
+struct mqtt_config {
+	std::string address;
+	std::string queue_name;
+};
+
+class mqtt_reader_queue {
 public:
-	struct configuration {
-		std::string address;
-		std::string queue_name;
-	};
+	mqtt_reader_queue(mqtt_config configuration);
 	
-	mqtt_queue(configuration configuration);
+protected:
+	void subscribe(std::vector<std::string> const& channel_names, mqtt::callback_t callback);
 	
-//	void start(std::vector<std::string> const& names) override;
+	const mqtt_config m_configuration;
+	
+private:
+	mqtt m_reader;
+};
+
+class mqtt_queue : public mqtt_reader_queue {
+public:
+	mqtt_queue(mqtt_config configuration);
 	
 protected:
 	void publish(std::string const& name, std::string const& message);
-	void subscribe(std::vector<std::string> const& channel_names, mqtt::callback_t callback);
-	
-	const configuration m_configuration;
 	
 private:
-	mqtt                m_publisher;
-	mqtt                m_updater;
+	mqtt m_publisher;
 };
-
 
 }

@@ -12,6 +12,7 @@
 #include "systems.h"
 #include "group.h"
 #include "homekit_controller.h"
+#include "switches_controller.h"
 #include <home-link/controller.h>
 #include <string>
 #include <map>
@@ -35,9 +36,10 @@ private:
 	group* get_group(std::string const& name);
 	
 	configuration                                 m_configuration;
-	homekit                                       m_homekit;
 	systems                                       m_systems;
 	homelink::controller                          m_controller;
+	homekit                                       m_homekit;
+	switches_controller                           m_switches;
 	std::map<std::string, std::unique_ptr<group>> m_groups;
 };
 

@@ -46,7 +46,7 @@ std::string const& command(std::uint8_t brightness) {
 
 }
 
-mqtt_system::mqtt_system(mqtt_queue::configuration configuration)
+mqtt_system::mqtt_system(mqtt_config configuration)
 	: mqtt_queue(std::move(configuration))
 {
 	enumerate_devices();

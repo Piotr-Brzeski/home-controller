@@ -16,7 +16,7 @@ namespace home {
 
 class mqtt_system: public system_base, public mqtt_queue {
 public:
-	mqtt_system(mqtt_queue::configuration configuration);
+	mqtt_system(mqtt_config configuration);
 	
 	device_type get_device_type(std::string const& name) const override;
 	void start(std::vector<std::string> const& names) override;

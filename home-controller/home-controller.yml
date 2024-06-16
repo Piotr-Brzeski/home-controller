@@ -96,6 +96,11 @@ targets:
       - path: mqtt_system.h
         group: home-controller
         buildPhase: none
+      - path: switches_controller.cpp
+        group: home-controller
+      - path: switches_controller.h
+        group: home-controller
+        buildPhase: none
       - path: system_base.h
         group: home-controller
         buildPhase: none

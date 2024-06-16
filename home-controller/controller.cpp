@@ -15,6 +15,7 @@ using namespace home;
 controller::controller(const char* configuration_path)
 	: m_configuration(configuration_path)
 	, m_homekit(m_configuration.homekit_configuration())
+	, m_switches(m_configuration.mqtt_configuration())
 {
 	// systems
 	m_systems.add(std::make_unique<mqtt_system>(m_configuration.mqtt_configuration()));
@@ -22,7 +23,7 @@ controller::controller(const char* configuration_path)
 	auto groups_definition = m_configuration.groups();
 	for(auto& group_definition : groups_definition) {
 		auto devices_group = std::make_unique<group>();
-		for(auto& device_name : group_definition.second) {
+		for(auto& device_name : group_definition.second.devices) {
 			auto& bulb_update_callbacks = bulb_configs[device_name];
 			bulb_update_callbacks.push_back(
 				[homekit = &m_homekit, group = devices_group.get(), group_name = group_definition.first](){
@@ -40,8 +41,16 @@ controller::controller(const char* configuration_path)
 		auto const& group_name = group_definition.first;
 		group_names.push_back(group_name);
 		auto devices_group = get_group(group_name);
-		for(auto& device_name : group_definition.second) {
+		for(auto& device_name : group_definition.second.devices) {
 			devices_group->add(m_systems.bulb_getter(device_name), m_systems.bulb_setter(device_name));
+		}
+		auto& switch_name = group_definition.second.switch_name;
+		if(!switch_name.empty()) {
+			m_switches.add(
+				switch_name,
+				[group = devices_group](){ group->toggle(); },
+				[group = devices_group](){ group->increase(); },
+				[group = devices_group](){ group->decrease(); });
 		}
 	}
 	// Homekit
@@ -52,7 +61,9 @@ controller::controller(const char* configuration_path)
 			group->set_brigntness(brightness);
 		}
 	);
-	// commands
+	// Switches
+	m_switches.start();
+	// Commands
 	auto commands = m_configuration.commands();
 	for(auto& command : commands) {
 		auto group = get_group(command.second.device);
