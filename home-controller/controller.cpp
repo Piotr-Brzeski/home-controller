@@ -35,11 +35,10 @@ controller::controller(const char* configuration_path)
 	}
 	m_systems.start(bulb_configs);
 	// groups
-	auto group_names = std::vector<std::string>();
-	group_names.reserve(groups_definition.size());
+	auto homekit_group_names = std::vector<std::string>();
+	homekit_group_names.reserve(groups_definition.size());
 	for(auto& group_definition : groups_definition) {
 		auto const& group_name = group_definition.first;
-		group_names.push_back(group_name);
 		auto devices_group = get_group(group_name);
 		for(auto& device_name : group_definition.second.devices) {
 			devices_group->add(m_systems.bulb_getter(device_name), m_systems.bulb_setter(device_name));
@@ -52,10 +51,11 @@ controller::controller(const char* configuration_path)
 				[group = devices_group](){ group->increase(); },
 				[group = devices_group](){ group->decrease(); });
 		}
+		homekit_group_names.push_back(group_name);
 	}
 	// Homekit
 	m_homekit.start(
-		std::move(group_names),
+		std::move(homekit_group_names),
 		[this](std::string const& name, std::uint8_t brightness) {
 			auto group = get_group(name);
 			group->set_brigntness(brightness);

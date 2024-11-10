@@ -104,11 +104,14 @@ void mqtt_system::call(std::string const& name, std::string message) {
 		static auto const brightness_key = std::string("brightness");
 		auto state_json = json(std::move(message));
 		auto raw_brightness_value = state_json.get().get(brightness_key);
-		// TODO: Handle (log) error
-		assert(raw_brightness_value);
-		auto raw_brightness = raw_brightness_value->get_int();
-		auto brightness = brightness_from_raw(raw_brightness);
-		m_callback(name, brightness);
+		if(raw_brightness_value) {
+			auto raw_brightness = raw_brightness_value->get_int();
+			auto brightness = brightness_from_raw(raw_brightness);
+			m_callback(name, brightness);
+		}
+		else {
+			// TODO: Handle (log) error
+		}
 	}
 	catch(...) {
 		// TODO: Log error
