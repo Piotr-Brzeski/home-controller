@@ -13,7 +13,7 @@
 
 namespace home {
 
-enum class device_type { bulb, none };
+enum class device_type { bulb, outlet, none };
 
 class system_base {
 public:
@@ -35,4 +35,3 @@ protected:
 };
 
 } // namespace home
-

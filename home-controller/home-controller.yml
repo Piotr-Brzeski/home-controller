@@ -13,6 +13,7 @@ targets:
     platform: macOS
     type: tool
     templates:
+      - include-curl-ws
       - link-curl-ws
       - link-coap
       - link-mosquitto
@@ -43,9 +44,9 @@ targets:
         -lcoap-3-gnutls
         -lcurl
     sources:
-      - path: bulb.cpp
+      - path: bulbs_group.cpp
         group: home-controller
-      - path: bulb.h
+      - path: bulbs_group.h
         group: home-controller
         buildPhase: none
       - path: commands_queue.cpp
@@ -63,12 +64,25 @@ targets:
       - path: controller.h
         group: home-controller
         buildPhase: none
+      - path: curl_connection.cpp
+        group: home-controller
+      - path: curl_connection.h
+        group: home-controller
+        buildPhase: none
+      - path: device.h
+        group: home-controller
+        buildPhase: none
+      - path: dirigera_system.cpp
+        group: home-controller
+      - path: dirigera_system.h
+        group: home-controller
+        buildPhase: none
       - path: exception.h
         group: home-controller
         buildPhase: none
-      - path: group.cpp
+      - path: http_connection.cpp
         group: home-controller
-      - path: group.h
+      - path: http_connection.h
         group: home-controller
         buildPhase: none
       - path: homekit_controller.cpp
@@ -101,6 +115,9 @@ targets:
       - path: switches_controller.h
         group: home-controller
         buildPhase: none
+      - path: single_outlet.h
+        group: home-controller
+        buildPhase: none
       - path: system_base.h
         group: home-controller
         buildPhase: none
@@ -109,3 +126,9 @@ targets:
       - path: systems.h
         group: home-controller
         buildPhase: none
+      - path: ws_connection.cpp
+        group: home-controller
+      - path: ws_connection.h
+        group: home-controller
+        buildPhase: none
+

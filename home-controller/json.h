@@ -3,7 +3,7 @@
 //  home-controller
 //
 //  Created by Piotr Brzeski on 2023-05-27.
-//  Copyright © 2023 Brzeski.net. All rights reserved.
+//  Copyright © 2023-2024 Brzeski.net. All rights reserved.
 //
 
 #pragma once
@@ -13,5 +13,6 @@
 namespace home {
 
 using json = format::json;
+using json_value = format::value_wrapper;
 
 }

@@ -20,14 +20,16 @@ public:
 	using mqtt_reader_queue::mqtt_reader_queue;
 	using callback_t = std::function<void()>;
 	
-	void add(std::string const& name, callback_t toggle, callback_t increase, callback_t decrease);
+	void add(std::string const& name, callback_t toggle, callback_t up, callback_t down, callback_t alt_up, callback_t alt_down);
 	void start();
 	
 private:
 	struct callbacks {
 		callback_t toggle;
-		callback_t increase;
-		callback_t decrease;
+		callback_t up;
+		callback_t down;
+		callback_t alt_up;
+		callback_t alt_down;
 	};
 	std::map<std::string, callbacks> m_callbacks;
 };

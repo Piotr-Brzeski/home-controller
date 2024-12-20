@@ -1,12 +1,12 @@
 //
-//  group.cpp
+//  bulbs_group.cpp
 //  home-controller
 //
 //  Created by Piotr Brzeski on 2023-06-13.
 //  Copyright © 2023-2024 Brzeski.net. All rights reserved.
 //
 
-#include "group.h"
+#include "bulbs_group.h"
 #include <algorithm>
 #include <numeric>
 #include <cassert>
@@ -19,7 +19,7 @@ constexpr auto timeout = std::chrono::milliseconds(600);
 
 }
 
-group::group() {
+bulbs_group::bulbs_group() {
 	m_thread = std::thread([this](){
 		auto lock = std::unique_lock(m_mutex);
 		while(m_run) {
@@ -39,7 +39,7 @@ group::group() {
 	});
 }
 
-group::~group() {
+bulbs_group::~bulbs_group() {
 	{
 		auto lock = std::lock_guard(m_mutex);
 		m_run = false;
@@ -48,13 +48,13 @@ group::~group() {
 	m_thread.join();
 }
 
-void group::add(bulb_get get, bulb_set set) {
+void bulbs_group::add(bulb_get get, bulb_set set) {
 	m_members.push_back({get, set});
 	m_status.push_back(bulb::zero_brightness);
 	m_to_set.push_back(false);
 }
 
-void group::toggle() {
+void bulbs_group::toggle() {
 	auto lock = std::lock_guard(m_mutex);
 	prepare_status(false);
 	{
@@ -67,7 +67,7 @@ void group::toggle() {
 	send();
 }
 
-void group::increase() {
+void bulbs_group::increase() {
 	auto lock = std::lock_guard(m_mutex);
 	prepare_status(false);
 	{
@@ -87,7 +87,7 @@ void group::increase() {
 	send();
 }
 
-void group::decrease() {
+void bulbs_group::decrease() {
 	auto lock = std::lock_guard(m_mutex);
 	prepare_status(false);
 	{
@@ -109,7 +109,7 @@ void group::decrease() {
 }
 
 // 0 - 100
-void group::set_brigntness(std::uint8_t brightness) {
+void bulbs_group::set_brigntness(std::uint8_t brightness) {
 	if(brightness > 100) {
 		assert(false);
 		brightness = 100;
@@ -130,7 +130,7 @@ void group::set_brigntness(std::uint8_t brightness) {
 	send();
 }
 
-std::uint8_t group::get_brightness() {
+std::uint8_t bulbs_group::get_brightness() {
 	auto lock = std::lock_guard(m_mutex);
 	prepare_status(true);
 	{
@@ -143,7 +143,7 @@ std::uint8_t group::get_brightness() {
 	}
 }
 
-void group::prepare_status(bool force_get) {
+void bulbs_group::prepare_status(bool force_get) {
 	if(force_get || (!m_send_time && clock::now() - m_last_set > timeout)) {
 		for(std::size_t i = 0; i < m_members.size(); ++i) {
 			m_status[i] = m_members[i].get();
@@ -152,7 +152,7 @@ void group::prepare_status(bool force_get) {
 	}
 }
 
-void group::send() {
+void bulbs_group::send() {
 	if(m_send_time) {
 		// Current status will be sent
 		return;
@@ -166,7 +166,7 @@ void group::send() {
 	m_condition.notify_one();
 }
 
-void group::send_status() {
+void bulbs_group::send_status() {
 	for(std::size_t i = 0; i < size(); ++i) {
 		if(m_to_set[i]) {
 			m_members[i].set(m_status[i]);
@@ -176,7 +176,7 @@ void group::send_status() {
 	m_last_set = clock::now();
 }
 
-void group::set(std::size_t index, std::uint8_t brightness) {
+void bulbs_group::set(std::size_t index, std::uint8_t brightness) {
 	m_status[index] = brightness;
 	m_to_set[index] = true;
 }

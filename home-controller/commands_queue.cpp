@@ -32,9 +32,11 @@ commands_queue::commands_queue() {
 }
 
 commands_queue::~commands_queue() {
-	std::lock_guard lock(m_mutex);
-	m_run = false;
-	m_condition.notify_one();
+	{
+		std::lock_guard lock(m_mutex);
+		m_run = false;
+		m_condition.notify_one();
+	}
 	m_thread.join();
 }
 

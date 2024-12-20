@@ -13,12 +13,14 @@
 
 using namespace home;
 
-void switches_controller::add(std::string const& name, callback_t toggle, callback_t increase, callback_t decrease) {
+void switches_controller::add(std::string const& name, callback_t toggle, callback_t up, callback_t down, callback_t alt_up, callback_t alt_down) {
 	assert(!name.empty());
 	assert(toggle);
-	assert(increase);
-	assert(decrease);
-	if(!m_callbacks.emplace(name, callbacks{toggle, increase, decrease}).second) {
+	assert(up);
+	assert(down);
+	assert(alt_up);
+	assert(alt_down);
+	if(!m_callbacks.emplace(name, callbacks{toggle, up, down, alt_up, alt_down}).second) {
 		throw exception("Switch \"" + name + "\" is already configured.");
 	}
 }
@@ -44,6 +46,8 @@ void switches_controller::start() {
 			static auto const action_toggle = std::string("toggle");
 			static auto const action_increase = std::string("brightness_up_click");
 			static auto const action_decrease = std::string("brightness_down_click");
+			static auto const action_alt_increase = std::string("arrow_right_click");
+			static auto const action_alt_decrease = std::string("arrow_left_click");
 			auto event_json = json(std::move(message));
 			auto action_value = event_json.get().get(action_key);
 			// TODO: Handle (log) error
@@ -53,10 +57,20 @@ void switches_controller::start() {
 				actions.toggle();
 			}
 			else if(action == action_increase) {
-				actions.increase();
+				actions.up();
 			}
 			else if(action == action_decrease) {
-				actions.decrease();
+				actions.down();
+			}
+			else if(action == action_alt_increase) {
+				actions.alt_up();
+			}
+			else if(action == action_alt_decrease) {
+				actions.alt_down();
+			}
+			else {
+				// TODO: Support more actions like "brightness_up_hold" etc
+				//assert(false);
 			}
 		}
 		catch(...) {

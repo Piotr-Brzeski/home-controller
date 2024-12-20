@@ -1,5 +1,5 @@
 //
-//  group.h
+//  bulbs_group.h
 //  home-controller
 //
 //  Created by Piotr Brzeski on 2023-06-13.
@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include "bulb.h"
+#include "device.h"
 #include <vector>
 #include <mutex>
 #include <thread>
@@ -18,13 +18,13 @@
 
 namespace home {
 
-class group {
+class bulbs_group {
 public:
 	using bulb_get = std::function<std::uint8_t()>;
 	using bulb_set = std::function<void(std::uint8_t)>;
 	
-	group();
-	~group();
+	bulbs_group();
+	~bulbs_group();
 	
 	void add(bulb_get get, bulb_set set);
 	
