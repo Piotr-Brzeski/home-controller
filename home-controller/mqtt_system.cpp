@@ -63,11 +63,13 @@ void mqtt_system::enumerate_devices() {
 		auto model_value = device_description.get(model_id_key);
 		if(model_value) {
 			auto model = model_value->get_string();
-			if(model == "TRADFRI bulb GU10 WS 400lm") {
+			if(model == "TRADFRI bulb GU10 WS 400lm" ||
+				 model == "TRADFRI bulb GU10 WS 345lm") {
 				auto name = device_description[name_key].get_string();
 				m_bulb_names.insert(std::move(name));
 			}
 			else {
+				// lumi.switch.acn047 = Aqara
 				std::cout << "\n*** " + model << std::endl;
 			}
 		}
