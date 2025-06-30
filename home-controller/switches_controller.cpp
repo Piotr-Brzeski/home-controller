@@ -50,27 +50,31 @@ void switches_controller::start() {
 			static auto const action_alt_decrease = std::string("arrow_left_click");
 			auto event_json = json(std::move(message));
 			auto action_value = event_json.get().get(action_key);
-			// TODO: Handle (log) error
-			assert(action_value);
-			auto action = action_value->get_string();
-			if(action == action_toggle) {
-				actions.toggle();
-			}
-			else if(action == action_increase) {
-				actions.up();
-			}
-			else if(action == action_decrease) {
-				actions.down();
-			}
-			else if(action == action_alt_increase) {
-				actions.alt_up();
-			}
-			else if(action == action_alt_decrease) {
-				actions.alt_down();
+			if(action_value) {
+				auto action = action_value->get_string();
+				if(action == action_toggle) {
+					actions.toggle();
+				}
+				else if(action == action_increase) {
+					actions.up();
+				}
+				else if(action == action_decrease) {
+					actions.down();
+				}
+				else if(action == action_alt_increase) {
+					actions.alt_up();
+				}
+				else if(action == action_alt_decrease) {
+					actions.alt_down();
+				}
+				else {
+					// TODO: Support more actions like "brightness_up_hold" etc
+					//assert(false);
+				}
 			}
 			else {
-				// TODO: Support more actions like "brightness_up_hold" etc
-				//assert(false);
+				// TODO: Handle (log) error
+				//assert(action_value);
 			}
 		}
 		catch(...) {
