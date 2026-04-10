@@ -70,7 +70,6 @@ http_patch::http_patch(std::string const& url, std::string const& access_token)
 	error_buffer()[0] = '\0';
 	m_patch = ::curl_easy_init();
 	if(m_patch == nullptr) {
-		::curl_easy_cleanup(m_patch);
 		throw exception("cURL fatal error");
 	}
 	add_header(m_patch_headers, "Authorization: Bearer " + access_token);
@@ -84,6 +83,7 @@ http_patch::http_patch(http_patch&& patch)
 	: m_patch(patch.m_patch)
 	, m_patch_headers(patch.m_patch_headers)
 	, m_patch_url(std::move(patch.m_patch_url))
+	, m_result(std::move(patch.m_result))
 {
 	patch.m_patch = nullptr;
 	patch.m_patch_headers = nullptr;

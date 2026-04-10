@@ -3,7 +3,7 @@
 //  home-controller
 //
 //  Created by Piotr Brzeski on 2023-06-13.
-//  Copyright © 2023-2024 Brzeski.net. All rights reserved.
+//  Copyright © 2023-2026 Brzeski.net. All rights reserved.
 //
 
 #include "bulbs_group.h"
@@ -49,6 +49,7 @@ bulbs_group::~bulbs_group() {
 }
 
 void bulbs_group::add(bulb_get get, bulb_set set) {
+	auto lock = std::lock_guard(m_mutex);
 	m_members.push_back({get, set});
 	m_status.push_back(bulb::zero_brightness);
 	m_to_set.push_back(false);
@@ -94,11 +95,11 @@ void bulbs_group::decrease() {
 		assert(size() > 0);
 		std::size_t index = size() - 1;
 		auto max_brightness = m_status[index];
-		for(auto i = index - 1; i < size(); --i) {
-			auto brightness = m_status[i];
+		for(auto i = index; i > 0; --i) {
+			auto brightness = m_status[i - 1];
 			if(brightness > max_brightness) {
 				max_brightness = brightness;
-				index = i;
+				index = i - 1;
 			}
 		}
 		if(max_brightness > bulb::zero_brightness) {

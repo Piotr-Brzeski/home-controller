@@ -64,7 +64,8 @@ void mqtt_system::enumerate_devices() {
 		if(model_value) {
 			auto model = model_value->get_string();
 			if(model == "TRADFRI bulb GU10 WS 400lm" ||
-				 model == "TRADFRI bulb GU10 WS 345lm") {
+				 model == "TRADFRI bulb GU10 WS 345lm" ||
+				 model == "TRADFRIbulbGU10WS345lm") {
 				auto name = device_description[name_key].get_string();
 				m_bulb_names.insert(std::move(name));
 			}

@@ -3,7 +3,7 @@
 //  home-controller
 //
 //  Created by Piotr Brzeski on 2024-04-16.
-//  Copyright © 2024 Brzeski.net. All rights reserved.
+//  Copyright © 2024-2026 Brzeski.net. All rights reserved.
 //
 
 #include "commands_queue.h"
@@ -21,11 +21,13 @@ commands_queue::commands_queue() {
 				cmd();
 			}
 			lock.lock();
-			if(m_next_wake_time) {
-				m_condition.wait_until(lock, *m_next_wake_time);
-			}
-			else {
-				m_condition.wait(lock);
+			if(m_commands.empty()) {
+				if(m_next_wake_time) {
+					m_condition.wait_until(lock, *m_next_wake_time);
+				}
+				else {
+					m_condition.wait(lock);
+				}
 			}
 		}
 	});
