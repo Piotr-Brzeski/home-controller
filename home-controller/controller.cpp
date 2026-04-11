@@ -3,7 +3,7 @@
 //  home-controller
 //
 //  Created by Piotr Brzeski on 2023-01-20.
-//  Copyright © 2023-2024 Brzeski.net. All rights reserved.
+//  Copyright © 2023-2026 Brzeski.net. All rights reserved.
 //
 
 #include "controller.h"
@@ -101,7 +101,7 @@ bulbs_group* controller::get_group(std::string const& name) {
 single_outlet* controller::get_outlet(std::string const& name) {
 	auto it = m_outlets.find(name);
 	if(it == m_outlets.end()) {
-		throw exception("Outlet \"" + name + "\"not found.");
+		throw exception("Outlet \"" + name + "\" not found.");
 	}
 	return it->second.get();
 }

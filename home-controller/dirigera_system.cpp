@@ -3,12 +3,13 @@
 //  home-controller
 //
 //  Created by Piotr Brzeski on 2024-11-30.
-//  Copyright © 2024 Brzeski.net. All rights reserved.
+//  Copyright © 2024-2026 Brzeski.net. All rights reserved.
 //
 
 #include "dirigera_system.h"
 #include "json.h"
 #include <set>
+#include <cassert>
 //#include <iostream>
 
 using namespace home;
@@ -57,6 +58,7 @@ void dirigera_system::start(std::vector<std::string> const& names) {
 		}
 		else {
 			auto patch = http_patch(m_uri + it->second, m_get_connection.access_token());
+			m_patch_connections.erase(name);
 			m_patch_connections.emplace(name, std::move(patch));
 			ids.insert(it->second);
 		}
@@ -75,7 +77,7 @@ void dirigera_system::start(std::vector<std::string> const& names) {
 	});
 }
 
-void dirigera_system::ping(std::string const& name) {
+void dirigera_system::ping([[maybe_unused]] std::string const& name) {
 	
 }
 

@@ -7,7 +7,6 @@
 //
 
 #include "commands_queue.h"
-//#include <cassert>
 
 using namespace home;
 
@@ -21,7 +20,7 @@ commands_queue::commands_queue() {
 				cmd();
 			}
 			lock.lock();
-			if(m_commands.empty()) {
+			if(m_run && m_commands.empty()) {
 				if(m_next_wake_time) {
 					m_condition.wait_until(lock, *m_next_wake_time);
 				}

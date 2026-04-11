@@ -3,13 +3,13 @@
 //  home-controller
 //
 //  Created by Piotr Brzeski on 2023-10-31.
-//  Copyright © 2023-2024 brzeski.net. All rights reserved.
+//  Copyright © 2023-2026 Brzeski.net. All rights reserved.
 //
 
 #include "http_connection.h"
 #include "exception.h"
 #include <cpp-log/log.h>
-#include <curl-ws/curl.h>
+#include <curl/curl.h>
 
 using namespace home;
 
@@ -90,8 +90,12 @@ http_patch::http_patch(http_patch&& patch)
 }
 
 http_patch::~http_patch() {
-	if(m_result.valid()) {
-		m_result.get();
+	try {
+		if(m_result.valid()) {
+			m_result.get();
+		}
+	}
+	catch(...) {
 	}
 	::curl_easy_cleanup(m_patch);
 	::curl_slist_free_all(m_patch_headers);

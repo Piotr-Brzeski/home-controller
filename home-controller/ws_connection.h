@@ -3,7 +3,7 @@
 //  home-controller
 //
 //  Created by Piotr Brzeski on 2023-11-30.
-//  Copyright © 2023 brzeski.net. All rights reserved.
+//  Copyright © 2023-2026 Brzeski.net. All rights reserved.
 //
 
 #pragma once

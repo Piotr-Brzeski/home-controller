@@ -72,6 +72,7 @@ void bulbs_group::increase() {
 	auto lock = std::lock_guard(m_mutex);
 	prepare_status(false);
 	{
+		assert(size() > 0);
 		std::size_t index = 0;
 		auto min_brightness = m_status[index];
 		for(std::size_t i = 1; i < size(); ++i) {

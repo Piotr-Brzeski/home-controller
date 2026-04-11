@@ -3,13 +3,14 @@
 //  home-controller
 //
 //  Created by Piotr Brzeski on 2023-10-31.
-//  Copyright © 2023-2024 brzeski.net. All rights reserved.
+//  Copyright © 2023-2026 Brzeski.net. All rights reserved.
 //
 
 #pragma once
 
 #include "curl_connection.h"
 #include <future>
+#include <vector>
 
 namespace home {
 

@@ -9,17 +9,6 @@
 	path = cpp-network
 	url = https://github.com/Piotr-Brzeski/cpp-network.git
 	branch = xcodegen
-[submodule "cpp-coap"]
-	path = cpp-coap
-	url = https://github.com/Piotr-Brzeski/cpp-coap.git
-	branch = xcodegen
 [submodule "cpp-log"]
 	path = cpp-log
 	url = https://github.com/Piotr-Brzeski/cpp-log
-[submodule "cpp-ikea"]
-	path = cpp-ikea
-	url = https://github.com/Piotr-Brzeski/cpp-ikea.git
-	branch = dirigera
-[submodule "curl-ws"]
-	path = curl-ws
-	url = https://github.com/Piotr-Brzeski/curl-ws.git

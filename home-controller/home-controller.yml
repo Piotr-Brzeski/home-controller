@@ -1,28 +1,17 @@
 targetTemplates:
-  link-coap:
-    settings:
-      OTHER_LDFLAGS:
-        - -lcoap-3-openssl
-        - -lssl
   link-mosquitto:
     settings:
       OTHER_LDFLAGS:
         - -lmosquitto
+        - -lcurl
 targets:
   home-controller:
     platform: macOS
     type: tool
     templates:
-      - include-curl-ws
-      - link-curl-ws
-      - link-coap
       - link-mosquitto
     dependencies:
       - target: home-link
-        link: true
-      - target: cpp-ikea
-        link: true
-      - target: cpp-coap
         link: true
       - target: cpp-network
         link: true
@@ -34,15 +23,12 @@ targets:
       HEADER_SEARCH_PATHS:
         - /opt/homebrew/include
         - ${SRCROOT}/home-link
-        - ${SRCROOT}/cpp-ikea
         - ${SRCROOT}/cpp-network
         - ${SRCROOT}/cpp-data-format
         - ${SRCROOT}/cpp-log
       LIBRARY_SEARCH_PATHS:
         - /opt/homebrew/lib
-      _LINUX_OTHER_LDFLAGS:
-        -lcoap-3-gnutls
-        -lcurl
+
     sources:
       - path: bulbs_group.cpp
         group: home-controller

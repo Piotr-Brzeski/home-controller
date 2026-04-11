@@ -3,12 +3,12 @@
 //  home-controller
 //
 //  Created by Piotr Brzeski on 2023-11-30.
-//  Copyright © 2023-2024 brzeski.net. All rights reserved.
+//  Copyright © 2023-2026 Brzeski.net. All rights reserved.
 //
 
 #include "curl_connection.h"
 #include "exception.h"
-#include <curl-ws/curl.h>
+#include <curl/curl.h>
 #include <mutex>
 
 using namespace home;
@@ -37,8 +37,8 @@ curl_connection::~curl_connection() {
 }
 
 char* curl_connection::error_buffer() {
-	thread_local char buffer[CURL_ERROR_SIZE];
-	return buffer;
+	static_assert(std::tuple_size_v<decltype(m_error_buffer)> == CURL_ERROR_SIZE);
+	return m_error_buffer.data();
 }
 
 void curl_connection::check(int int_result) {

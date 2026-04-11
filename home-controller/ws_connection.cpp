@@ -3,13 +3,13 @@
 //  home-controller
 //
 //  Created by Piotr Brzeski on 2023-11-30.
-//  Copyright © 20232-2024 brzeski.net. All rights reserved.
+//  Copyright © 2023-2026 Brzeski.net. All rights reserved.
 //
 
 #include "ws_connection.h"
 #include "exception.h"
 #include <cpp-log/log.h>
-#include <curl-ws/curl.h>
+#include <curl/curl.h>
 #include <cassert>
 
 using namespace home;
@@ -28,7 +28,11 @@ ws_connection::ws_connection(std::string const& url, std::string const& access_t
 }
 
 ws_connection::~ws_connection() {
-	stop();
+	try {
+		stop();
+	}
+	catch(...) {
+	}
 	::curl_easy_cleanup(m_ws);
 	::curl_slist_free_all(m_headers);
 }

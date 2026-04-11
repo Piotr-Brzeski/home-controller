@@ -3,12 +3,13 @@
 //  home-controller
 //
 //  Created by Piotr Brzeski on 2023-11-30.
-//  Copyright © 2023-2024 brzeski.net. All rights reserved.
+//  Copyright © 2023-2026 Brzeski.net. All rights reserved.
 //
 
 #pragma once
 
 #include <string>
+#include <array>
 
 extern "C" {
 struct curl_slist;
@@ -22,11 +23,14 @@ public:
 	~curl_connection();
 	
 protected:
-	static char* error_buffer();
-	static void check(int result);
+	char* error_buffer();
+	void check(int result);
 	static void add_header(::curl_slist*& headers, std::string const& header);
-	static void configure(void* curl, ::curl_slist* headers);
-	static long send_request(void* curl);
+	void configure(void* curl, ::curl_slist* headers);
+	long send_request(void* curl);
+
+private:
+	std::array<char, 256> m_error_buffer;
 };
 
 }

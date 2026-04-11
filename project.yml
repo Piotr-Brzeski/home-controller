@@ -14,19 +14,17 @@ settings:
   base:
     ONLY_ACTIVE_ARCH: true
     GCC_C_LANGUAGE_STANDARD: c11
-    CLANG_CXX_LANGUAGE_STANDARD: c++20
+    CLANG_CXX_LANGUAGE_STANDARD: c++23
     USE_HEADERMAP: false
     GCC_WARN_PEDANTIC: true
+    WARNING_CFLAGS: -Wextra
     GCC_TREAT_WARNINGS_AS_ERRORS: true
     DEAD_CODE_STRIPPING: true
     ENABLE_USER_SCRIPT_SANDBOXING: true
 
 include:
-  - curl-ws/curl-ws.yml
   - home-controller/home-controller.yml
   - cpp-network/cpp-network/cpp-network.yml
   - cpp-data-format/data-format/data-format.yml
-  - cpp-coap/cpp-coap/cpp-coap.yml
-  - cpp-ikea/cpp-ikea/cpp-ikea.yml
   - home-link/home-link/home-link.yml
   - cpp-log/cpp-log/cpp-log.yml

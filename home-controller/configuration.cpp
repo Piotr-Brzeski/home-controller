@@ -3,7 +3,7 @@
 //  home-controller
 //
 //  Created by Piotr Brzeski on 2023-06-13.
-//  Copyright © 2023 Brzeski.net. All rights reserved.
+//  Copyright © 2023-2026 Brzeski.net. All rights reserved.
 //
 
 #include "configuration.h"
@@ -220,7 +220,7 @@ std::map<std::string, configuration::operation> configuration::operations() {
 			m_outlet_names.insert(outlet_name);
 		}
 		if(!added) {
-			throw exception("Invalid operation \"" + name + "\": no group not outlet specified.");
+			throw exception("Invalid operation \"" + name + "\": no group nor outlet specified.");
 		}
 	}
 	return operations;
