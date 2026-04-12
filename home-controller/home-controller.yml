@@ -21,12 +21,14 @@ targets:
         link: true
     settings:
       HEADER_SEARCH_PATHS:
+        - /opt/homebrew/opt/curl/include
         - /opt/homebrew/include
         - ${SRCROOT}/home-link
         - ${SRCROOT}/cpp-network
         - ${SRCROOT}/cpp-data-format
         - ${SRCROOT}/cpp-log
       LIBRARY_SEARCH_PATHS:
+        - /opt/homebrew/opt/curl/lib
         - /opt/homebrew/lib
 
     sources:
