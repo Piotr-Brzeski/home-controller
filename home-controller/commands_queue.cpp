@@ -7,6 +7,7 @@
 //
 
 #include "commands_queue.h"
+#include <cpp-log/log.h>
 
 using namespace home;
 
@@ -16,8 +17,16 @@ commands_queue::commands_queue() {
 		auto lock = std::unique_lock(m_mutex);
 		while(get(commands) || m_run) {
 			lock.unlock();
-			for(auto cmd : commands) {
-				cmd();
+			for(auto& cmd : commands) {
+				try {
+					cmd();
+				}
+				catch(std::exception& e) {
+					logger::log(std::string("Command failed: ") + e.what());
+				}
+				catch(...) {
+					logger::log("Command failed with unknown exception");
+				}
 			}
 			lock.lock();
 			if(m_run && m_commands.empty()) {
