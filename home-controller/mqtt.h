@@ -3,7 +3,7 @@
 //  home-controller
 //
 //  Created by Piotr Brzeski on 2023-12-17.
-//  Copyright © 2023 Brzeski.net. All rights reserved.
+//  Copyright © 2023-2026 Brzeski.net. All rights reserved.
 //
 
 #pragma once
@@ -43,12 +43,14 @@ public:
 	
 private:
 	void subscribe(std::vector<char*> const& channels, callback_t callback);
-	void execute(std::function<int()> operation, char const* error_message);
-	
-	mosquitto* m_mosq = nullptr;
-	callback_t m_subscription_callback;
-	bool       m_connected = false;
-	bool       m_subscribed = false;
+	void execute(std::function<int()> operation, char const* error_message, bool try_reconnect = true);
+	void internal_subscribe(bool try_reconnect);
+
+	mosquitto*               m_mosq = nullptr;
+	callback_t               m_subscription_callback;
+	std::vector<std::string> m_subscription_channels;
+	bool                     m_connected = false;
+	bool                     m_subscribed = false;
 };
 
 }

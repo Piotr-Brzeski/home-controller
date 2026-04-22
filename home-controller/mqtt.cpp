@@ -3,7 +3,7 @@
 //  home-controller
 //
 //  Created by Piotr Brzeski on 2023-12-17.
-//  Copyright © 2023 Brzeski.net. All rights reserved.
+//  Copyright © 2023-2026 Brzeski.net. All rights reserved.
 //
 
 #include "mqtt.h"
@@ -11,6 +11,7 @@
 #include <cpp-log/log.h>
 #include <mosquitto.h>
 #include <mutex>
+#include <cassert>
 
 using namespace home;
 
@@ -50,7 +51,31 @@ mqtt::mqtt() {
 	if(m_mosq == nullptr) {
 		throw exception("mosquitto_new failed");
 	}
+	::mosquitto_reconnect_delay_set(m_mosq, 1, 30, true);
+	::mosquitto_connect_callback_set(m_mosq, [](::mosquitto*, void* context, int rc){
+		auto self = static_cast<mqtt*>(context);
+		if(rc == 0) {
+			logger::log("MQTT connected");
+			if(self->m_subscribed) {
+				try {
+					self->internal_subscribe(false);
+				}
+				catch(exception &e) {
+					logger::log(std::string("MQTT resubscribe failed: ") + e.what());
+				}
+			}
+		}
+		else {
+			logger::log(std::string("MQTT connection failed: ") + ::mosquitto_connack_string(rc));
+		}
+	});
+	::mosquitto_disconnect_callback_set(m_mosq, [](::mosquitto*, void*, int rc){
+		if(rc != 0) {
+			logger::log("MQTT connection lost (reason=" + std::to_string(rc) + ")");
+		}
+	});
 }
+
 mqtt::~mqtt() {
 	unsubscribe();
 	::mosquitto_destroy(m_mosq);
@@ -109,6 +134,7 @@ void mqtt::unsubscribe() {
 		::mosquitto_loop_stop(m_mosq, true);
 		::mosquitto_message_callback_set(m_mosq, nullptr);
 		m_subscription_callback = callback_t();
+		m_subscription_channels.clear();
 		m_subscribed = false;
 	}
 }
@@ -124,6 +150,10 @@ void mqtt::subscribe(std::vector<char*> const& channels, callback_t callback) {
 		throw exception("can not subscribe - channels list is empty.");
 	}
 	m_subscription_callback = callback;
+	m_subscription_channels.clear();
+	for(auto channel : channels) {
+		m_subscription_channels.push_back(channel);
+	}
 	::mosquitto_message_callback_set(m_mosq, [](::mosquitto*, void* context, const ::mosquitto_message* msg){
 		auto self = static_cast<mqtt*>(context);
 		if(self != nullptr && self->m_subscription_callback) {
@@ -133,20 +163,32 @@ void mqtt::subscribe(std::vector<char*> const& channels, callback_t callback) {
 			self->m_subscription_callback(std::move(channel), std::move(message));
 		}
 	});
-	execute([&, this](){ return ::mosquitto_subscribe_multiple(m_mosq, nullptr, static_cast<int>(channels.size()), channels.data(), 0, 0, nullptr); }, "mosquitto_subscribe_multiple failed");
+	internal_subscribe(true);
 	auto res = ::mosquitto_loop_start(m_mosq);
 	check(res, "mosquitto_loop_start failed");
 	m_subscribed = true;
 }
 
-void mqtt::execute(std::function<int()> operation, char const* error_message) {
+void mqtt::internal_subscribe(bool try_reconnect) {
+	assert(!m_subscription_channels.empty());
+	auto channels = std::vector<char*>();
+	channels.reserve(m_subscription_channels.size());
+	for(auto& channel : m_subscription_channels) {
+		channels.push_back(const_cast<char*>(channel.c_str()));
+	}
+	execute([&, this](){ return ::mosquitto_subscribe_multiple(m_mosq, nullptr, static_cast<int>(channels.size()), channels.data(), 0, 0, nullptr); }, "mosquitto_subscribe_multiple failed", try_reconnect);
+	logger::log("MQTT resubscribed to " + std::to_string(channels.size()) + " channels");
+}
+
+void mqtt::execute(std::function<int()> operation, char const* error_message, bool try_reconnect) {
 	auto res = operation();
 	if(res != MOSQ_ERR_SUCCESS) {
-		if(m_connected) {
+		if(m_connected && try_reconnect) {
+			logger::log("MQTT execute failed - trying to reconnect");
 			res = ::mosquitto_reconnect(m_mosq);
 			check(res, "mosquitto_reconnect failed");
 			res = operation();
-			check(res, error_message);
 		}
+		check(res, error_message);
 	}
 }
