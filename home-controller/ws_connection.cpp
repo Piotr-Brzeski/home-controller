@@ -11,20 +11,14 @@
 #include <cpp-log/log.h>
 #include <curl/curl.h>
 #include <cassert>
+#include <thread>
 
 using namespace home;
 
 ws_connection::ws_connection(std::string const& url, std::string const& access_token)
 	: m_url(url)
-	, m_ws(::curl_easy_init())
 {
-	if(m_ws == nullptr) {
-		throw exception("cURL fatal error");
-	}
-	::curl_easy_setopt(m_ws, CURLOPT_CONNECT_ONLY, 2L);
 	add_header(m_headers, "Authorization: Bearer " + access_token);
-	configure(m_ws, m_headers);
-	check(::curl_easy_setopt(m_ws, CURLOPT_URL, url.c_str()));
 }
 
 ws_connection::~ws_connection() {
@@ -33,7 +27,9 @@ ws_connection::~ws_connection() {
 	}
 	catch(...) {
 	}
-	::curl_easy_cleanup(m_ws);
+	if(m_ws != nullptr) {
+		::curl_easy_cleanup(m_ws);
+	}
 	::curl_slist_free_all(m_headers);
 }
 
@@ -65,9 +61,8 @@ void ws_connection::start(std::function<void(std::string const&)> message_callba
 				}
 			}
 			catch(...) {
-				// TODO: Log
 				message.clear();
-				connect();
+				reconnect();
 			}
 		}
 	});
@@ -81,6 +76,16 @@ void ws_connection::stop() {
 }
 
 void ws_connection::connect() {
+	if(m_ws != nullptr) {
+		::curl_easy_cleanup(m_ws);
+	}
+	m_ws = ::curl_easy_init();
+	if(m_ws == nullptr) {
+		throw exception("cURL fatal error");
+	}
+	::curl_easy_setopt(m_ws, CURLOPT_CONNECT_ONLY, 2L);
+	configure(m_ws, m_headers);
+	check(::curl_easy_setopt(m_ws, CURLOPT_URL, m_url.c_str()));
 	auto status = send_request(m_ws);
 	auto status_str = std::to_string(status);
 	logger::log("Websocket connect " + m_url + " : [" + status_str + "]");
@@ -88,6 +93,23 @@ void ws_connection::connect() {
 		throw exception("Websocket connect failed with status " + status_str);
 	}
 	m_descriptor = get_socket();
+}
+
+void ws_connection::reconnect() {
+	constexpr auto max_delay = std::chrono::seconds(30);
+	auto delay = std::chrono::seconds(1);
+	while(true) {
+		logger::log("Websocket connection lost, reconnecting in " + std::to_string(delay.count()) + "s");
+		std::this_thread::sleep_for(delay);
+		try {
+			connect();
+			return;
+		}
+		catch(exception& e) {
+			logger::log(std::string("Websocket reconnect failed: ") + e.what());
+			delay = std::min(delay * 2, max_delay);
+		}
+	}
 }
 
 int ws_connection::get_socket() {

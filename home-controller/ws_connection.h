@@ -25,6 +25,7 @@ public:
 	
 private:
 	void connect();
+	void reconnect();
 	int get_socket();
 	
 	std::string       m_url;
