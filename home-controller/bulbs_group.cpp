@@ -135,6 +135,10 @@ void bulbs_group::set_brigntness(std::uint8_t brightness) {
 std::uint8_t bulbs_group::get_brightness() {
 	auto lock = std::lock_guard(m_mutex);
 	prepare_status(true);
+	if(size() == 0) {
+		assert(false);
+		return bulb::zero_brightness;
+	}
 	{
 		auto sum = std::reduce(m_status.begin(), m_status.end());
 		auto max = size() * bulb::max_brightness;

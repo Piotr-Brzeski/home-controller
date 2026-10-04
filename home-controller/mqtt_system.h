@@ -20,6 +20,7 @@ public:
 	
 	device_type get_device_type(std::string const& name) const override;
 	void start(std::vector<std::string> const& names) override;
+	void stop() override;
 	void ping(std::string const& name) override;
 	void set(std::string const& name, std::uint8_t brightness) override;
 	

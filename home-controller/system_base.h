@@ -27,6 +27,7 @@ public:
 	
 	virtual device_type get_device_type(std::string const& name) const = 0;
 	virtual void start(std::vector<std::string> const& names) = 0;
+	virtual void stop() {}
 	virtual void ping(std::string const& name) = 0;
 	virtual void set(std::string const& name, std::uint8_t brightness) = 0;
 	

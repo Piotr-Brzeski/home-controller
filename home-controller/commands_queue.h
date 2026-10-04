@@ -27,6 +27,9 @@ public:
 	commands_queue();
 	~commands_queue();
 	
+	/// Executes pending commands and stops the thread
+	void stop();
+	
 	void execute(command cmd);
 	void execute(void* id, command cmd);
 	void execute_and_set(void* id, command cmd, time_point time);

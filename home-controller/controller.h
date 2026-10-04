@@ -24,6 +24,7 @@ namespace home {
 class controller {
 public:
 	controller(const char* configuration_path);
+	~controller();
 	
 	void start() {
 		auto port = m_configuration.port();
@@ -34,6 +35,8 @@ public:
 	}
 	
 private:
+	void initialize();
+	void stop();
 	bulbs_group* get_group(std::string const& name);
 	single_outlet* get_outlet(std::string const& name);
 	
@@ -42,11 +45,12 @@ private:
 	
 	configuration                                         m_configuration;
 	systems                                               m_systems;
-	homelink::controller                                  m_controller;
 	homekit                                               m_homekit;
 	switches_controller                                   m_switches;
 	std::map<std::string, std::unique_ptr<bulbs_group>>   m_bulb_groups;
 	std::map<std::string, std::unique_ptr<single_outlet>> m_outlets;
+	// Declared last - destroyed (network thread stopped) before groups and outlets
+	homelink::controller                                  m_controller;
 };
 
 }

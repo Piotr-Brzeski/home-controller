@@ -26,6 +26,15 @@ void check(int result, char const* error_message) {
 	}
 }
 
+std::vector<char*> c_strings(std::vector<std::string> const& strings) {
+	auto result = std::vector<char*>();
+	result.reserve(strings.size());
+	for(auto& str : strings) {
+		result.push_back(const_cast<char*>(str.c_str()));
+	}
+	return result;
+}
+
 constexpr int port = 1883;
 constexpr int ping_interval = 10; //s
 
@@ -56,12 +65,11 @@ mqtt::mqtt() {
 		auto self = static_cast<mqtt*>(context);
 		if(rc == 0) {
 			logger::log("MQTT connected");
+			auto lock = std::lock_guard(self->m_subscription_mutex);
 			if(self->m_subscribed) {
-				try {
-					self->internal_subscribe(false);
-				}
-				catch(exception &e) {
-					logger::log(std::string("MQTT resubscribe failed: ") + e.what());
+				auto res = self->internal_subscribe();
+				if(res != MOSQ_ERR_SUCCESS) {
+					logger::log(std::string("MQTT resubscribe failed: ") + ::mosquitto_strerror(res));
 				}
 			}
 		}
@@ -74,10 +82,24 @@ mqtt::mqtt() {
 			logger::log("MQTT connection lost (reason=" + std::to_string(rc) + ")");
 		}
 	});
+	::mosquitto_message_callback_set(m_mosq, [](::mosquitto*, void* context, const ::mosquitto_message* msg){
+		auto self = static_cast<mqtt*>(context);
+		auto callback = callback_t();
+		{
+			auto lock = std::lock_guard(self->m_subscription_mutex);
+			callback = self->m_subscription_callback;
+		}
+		if(callback) {
+			auto channel = std::string(msg->topic);
+			auto message = std::string(static_cast<const char*>(msg->payload), msg->payloadlen);
+			logger::log("MQTT recv [" + channel + "]: " + message);
+			callback(std::move(channel), std::move(message));
+		}
+	});
 }
 
 mqtt::~mqtt() {
-	unsubscribe();
+	disconnect();
 	::mosquitto_destroy(m_mosq);
 }
 
@@ -85,19 +107,34 @@ void mqtt::connect(std::string const& host) {
 	if(m_connected) {
 		throw exception("can not connect - already connected.");
 	}
+	logger::log("MQTT connect to " + host);
 	auto res = ::mosquitto_connect(m_mosq, host.c_str(), port, ping_interval);
 	check(res, "mosquitto_connect failed");
+	// Network loop sends keepalive pings and reconnects automatically
+	res = ::mosquitto_loop_start(m_mosq);
+	if(res != MOSQ_ERR_SUCCESS) {
+		::mosquitto_disconnect(m_mosq);
+	}
+	check(res, "mosquitto_loop_start failed");
 	m_connected = true;
 }
 
-void mqtt::publish(std::string const& channel, std::string const& message) {
-	if(m_subscribed) {
-		throw exception("can not publish - subscription is active.");
+/// Stops the network loop - no callback is running when it returns
+void mqtt::disconnect() {
+	if(m_connected) {
+		// Ignore results for now
+		::mosquitto_disconnect(m_mosq);
+		::mosquitto_loop_stop(m_mosq, false);
+		m_connected = false;
 	}
+}
+
+void mqtt::publish(std::string const& channel, std::string const& message) {
 	if(!m_connected) {
 		throw exception("can not publish - not connected.");
 	}
-	execute([&, this](){ return ::mosquitto_publish(m_mosq, nullptr, channel.c_str(), static_cast<int>(message.size()), message.data(), 0, false); }, "mosquitto_publish failed");
+	auto res = ::mosquitto_publish(m_mosq, nullptr, channel.c_str(), static_cast<int>(message.size()), message.data(), 0, false);
+	check(res, "mosquitto_publish failed");
 	logger::log("MQTT publish [" + channel + "]: " + message);
 }
 
@@ -129,10 +166,11 @@ void mqtt::subscribe(std::vector<std::string> const& channels, callback_t callba
 }
 
 void mqtt::unsubscribe() {
+	auto lock = std::lock_guard(m_subscription_mutex);
 	if(m_subscribed) {
+		auto channels = c_strings(m_subscription_channels);
 		// Ignore result for now
-		::mosquitto_loop_stop(m_mosq, true);
-		::mosquitto_message_callback_set(m_mosq, nullptr);
+		::mosquitto_unsubscribe_multiple(m_mosq, nullptr, static_cast<int>(channels.size()), channels.data(), nullptr);
 		m_subscription_callback = callback_t();
 		m_subscription_channels.clear();
 		m_subscribed = false;
@@ -143,52 +181,43 @@ void mqtt::subscribe(std::vector<char*> const& channels, callback_t callback) {
 	if(!m_connected) {
 		throw exception("can not subscribe - not connected.");
 	}
-	if(m_subscribed) {
-		throw exception("can not subscribe - subscription is active.");
-	}
 	if(channels.empty()) {
 		throw exception("can not subscribe - channels list is empty.");
 	}
+	auto lock = std::lock_guard(m_subscription_mutex);
+	if(m_subscribed) {
+		throw exception("can not subscribe - subscription is active.");
+	}
 	m_subscription_callback = callback;
-	m_subscription_channels.clear();
-	for(auto channel : channels) {
-		m_subscription_channels.push_back(channel);
-	}
-	::mosquitto_message_callback_set(m_mosq, [](::mosquitto*, void* context, const ::mosquitto_message* msg){
-		auto self = static_cast<mqtt*>(context);
-		if(self != nullptr && self->m_subscription_callback) {
-			auto channel = std::string(msg->topic);
-			auto message = std::string(static_cast<const char*>(msg->payload), msg->payloadlen);
-			logger::log("MQTT recv [" + channel + "]: " + message);
-			self->m_subscription_callback(std::move(channel), std::move(message));
-		}
-	});
-	internal_subscribe(true);
-	auto res = ::mosquitto_loop_start(m_mosq);
-	check(res, "mosquitto_loop_start failed");
+	m_subscription_channels.assign(channels.begin(), channels.end());
 	m_subscribed = true;
+	auto res = internal_subscribe();
+	if(res == MOSQ_ERR_NO_CONN) {
+		// Connect callback subscribes once the connection is established
+		logger::log("MQTT not connected yet - subscription postponed");
+	}
+	else if(res != MOSQ_ERR_SUCCESS) {
+		m_subscription_callback = callback_t();
+		m_subscription_channels.clear();
+		m_subscribed = false;
+		check(res, "mosquitto_subscribe_multiple failed");
+	}
 }
 
-void mqtt::internal_subscribe(bool try_reconnect) {
+/// Must be called with m_subscription_mutex locked
+int mqtt::internal_subscribe() {
 	assert(!m_subscription_channels.empty());
-	auto channels = std::vector<char*>();
-	channels.reserve(m_subscription_channels.size());
-	for(auto& channel : m_subscription_channels) {
-		channels.push_back(const_cast<char*>(channel.c_str()));
-	}
-	execute([&, this](){ return ::mosquitto_subscribe_multiple(m_mosq, nullptr, static_cast<int>(channels.size()), channels.data(), 0, 0, nullptr); }, "mosquitto_subscribe_multiple failed", try_reconnect);
-	logger::log("MQTT resubscribed to " + std::to_string(channels.size()) + " channels");
-}
-
-void mqtt::execute(std::function<int()> operation, char const* error_message, bool try_reconnect) {
-	auto res = operation();
-	if(res != MOSQ_ERR_SUCCESS) {
-		if(m_connected && try_reconnect) {
-			logger::log("MQTT execute failed - trying to reconnect");
-			res = ::mosquitto_reconnect(m_mosq);
-			check(res, "mosquitto_reconnect failed");
-			res = operation();
+	auto channels = c_strings(m_subscription_channels);
+	auto res = ::mosquitto_subscribe_multiple(m_mosq, nullptr, static_cast<int>(channels.size()), channels.data(), 0, 0, nullptr);
+	if(res == MOSQ_ERR_SUCCESS) {
+		auto channel_names = std::string();
+		for(auto& channel : m_subscription_channels) {
+			if(!channel_names.empty()) {
+				channel_names += ", ";
+			}
+			channel_names += channel;
 		}
-		check(res, error_message);
+		logger::log("MQTT subscribed to " + std::to_string(channels.size()) + " channels: " + channel_names);
 	}
+	return res;
 }

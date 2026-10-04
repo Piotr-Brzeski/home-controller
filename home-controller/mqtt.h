@@ -11,6 +11,7 @@
 #include <functional>
 #include <string>
 #include <vector>
+#include <mutex>
 
 struct mosquitto;
 
@@ -36,6 +37,7 @@ public:
 	
 	static std::string get_message(std::string const& host, std::string const& channel);
 	void connect(std::string const& host);
+	void disconnect();
 	void publish(std::string const& channel, std::string const& message);
 	void subscribe(std::string const& channel, callback_t callback);
 	void subscribe(std::vector<std::string> const& channels, callback_t callback);
@@ -43,13 +45,14 @@ public:
 	
 private:
 	void subscribe(std::vector<char*> const& channels, callback_t callback);
-	void execute(std::function<int()> operation, char const* error_message, bool try_reconnect = true);
-	void internal_subscribe(bool try_reconnect);
+	int internal_subscribe();
 
 	mosquitto*               m_mosq = nullptr;
+	bool                     m_connected = false;
+	// Subscription state is shared with the network loop thread
+	std::mutex               m_subscription_mutex;
 	callback_t               m_subscription_callback;
 	std::vector<std::string> m_subscription_channels;
-	bool                     m_connected = false;
 	bool                     m_subscribed = false;
 };
 

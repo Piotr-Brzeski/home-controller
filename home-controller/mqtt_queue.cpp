@@ -17,6 +17,10 @@ mqtt_reader_queue::mqtt_reader_queue(mqtt_config configuration)
 	m_reader.connect(m_configuration.address);
 }
 
+void mqtt_reader_queue::stop() {
+	m_reader.disconnect();
+}
+
 void mqtt_reader_queue::subscribe(std::vector<std::string> const& channel_names, mqtt::callback_t callback) {
 	auto channels = std::vector<std::string>();
 	channels.reserve(channel_names.size());

@@ -178,6 +178,9 @@ std::map<std::string, configuration::group> configuration::groups() const {
 		for(std::size_t i = 0; i < json_devices.size(); ++i) {
 			config.devices.push_back(json_devices[i].get_string());
 		}
+		if(config.devices.empty()) {
+			throw exception("Group \"" + name + "\" has no devices.");
+		}
 		auto switch_name = json_group.get("switch");
 		if(switch_name) {
 			config.switch_name = switch_name->get_string();

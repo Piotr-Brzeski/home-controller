@@ -42,12 +42,18 @@ commands_queue::commands_queue() {
 }
 
 commands_queue::~commands_queue() {
+	stop();
+}
+
+void commands_queue::stop() {
 	{
 		std::lock_guard lock(m_mutex);
 		m_run = false;
 		m_condition.notify_one();
 	}
-	m_thread.join();
+	if(m_thread.joinable()) {
+		m_thread.join();
+	}
 }
 
 void commands_queue::execute(command cmd) {

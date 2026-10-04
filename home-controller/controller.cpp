@@ -17,6 +17,27 @@ controller::controller(const char* configuration_path)
 	, m_homekit(m_configuration.homekit_configuration())
 	, m_switches(m_configuration.switches_configuration())
 {
+	try {
+		initialize();
+	}
+	catch(...) {
+		stop();
+		throw;
+	}
+}
+
+controller::~controller() {
+	stop();
+}
+
+/// Stops all threads which use groups and outlets
+void controller::stop() {
+	m_switches.stop();
+	m_homekit.stop();
+	m_systems.stop();
+}
+
+void controller::initialize() {
 	// systems
 	auto systems = m_configuration.systems_configuration();
 	for(auto& system_config : systems) {
@@ -46,7 +67,7 @@ controller::controller(const char* configuration_path)
 		m_bulb_groups.emplace(group_definition.first, std::move(devices_group));
 	}
 	auto& outlet_names = m_configuration.outlet_names();
-	m_systems.start(bulb_configs, outlet_names);
+	m_systems.add_devices(bulb_configs, outlet_names);
 	// single outlets
 	for(auto& name : outlet_names) {
 		auto outlet = std::make_unique<single_outlet>(m_systems.outlet_setter(name));
@@ -63,6 +84,8 @@ controller::controller(const char* configuration_path)
 		}
 		homekit_group_names.push_back(group_name);
 	}
+	// Start systems once groups are complete - device updates use groups
+	m_systems.start();
 	// Homekit
 	m_homekit.start(
 		std::move(homekit_group_names),

@@ -19,21 +19,25 @@ void systems::add(std::unique_ptr<system_base> system) {
 	m_systems.push_back(std::move(system));
 }
 
-void systems::start(std::map<std::string, std::vector<bulb::callback>> const& bulbs, std::set<std::string> const& outlet_names) {
-	auto systems = std::map<system_base*, std::vector<std::string>>();
+/// Creates devices. Nothing is started - devices can be connected to groups before any update arrives.
+void systems::add_devices(std::map<std::string, std::vector<bulb::callback>> const& bulbs, std::set<std::string> const& outlet_names) {
 	for(auto& bulb_config : bulbs) {
 		auto const& bulb_name = bulb_config.first;
 		auto system_with_bulb = get_system(bulb_name, device_type::bulb);
-		systems[system_with_bulb].push_back(bulb_name);
+		m_device_names[system_with_bulb].push_back(bulb_name);
 		auto const& bulb_update_callbacks = bulb_config.second;
 		m_bulbs.emplace(bulb_name, std::make_unique<bulb>(bulb_name, *system_with_bulb, bulb_update_callbacks));
 	}
 	for(auto& outlet_name : outlet_names) {
 		auto system_with_outlet = get_system(outlet_name, device_type::outlet);
-		systems[system_with_outlet].push_back(outlet_name);
+		m_device_names[system_with_outlet].push_back(outlet_name);
 		m_outlets.emplace(outlet_name, std::make_unique<outlet>(outlet_name, *system_with_outlet));
 	}
-	for(auto system_with_devices : systems) {
+}
+
+/// Subscribes to device updates and pings devices to get their current state
+void systems::start() {
+	for(auto& system_with_devices : m_device_names) {
 		auto system = system_with_devices.first;
 		auto const& names = system_with_devices.second;
 		system->start(names);
@@ -41,6 +45,14 @@ void systems::start(std::map<std::string, std::vector<bulb::callback>> const& bu
 			m_commands.execute([system, name](){ system->ping(name); });
 		}
 	}
+}
+
+/// Stops device updates, then executes pending commands and stops the commands thread
+void systems::stop() {
+	for(auto& system : m_systems) {
+		system->stop();
+	}
+	m_commands.stop();
 }
 
 systems::bulb_get systems::bulb_getter(const std::string &name) {

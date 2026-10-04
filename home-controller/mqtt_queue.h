@@ -23,6 +23,9 @@ class mqtt_reader_queue {
 public:
 	mqtt_reader_queue(mqtt_config configuration);
 	
+	/// Stops receiving messages - no callback is running when it returns
+	void stop();
+	
 protected:
 	void subscribe(std::vector<std::string> const& channel_names, mqtt::callback_t callback);
 	

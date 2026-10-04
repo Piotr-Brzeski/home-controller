@@ -92,6 +92,10 @@ void mqtt_system::start(std::vector<std::string> const& names) {
 	subscribe(names, std::bind(&mqtt_system::call, this, std::placeholders::_1, std::placeholders::_2));
 }
 
+void mqtt_system::stop() {
+	mqtt_reader_queue::stop();
+}
+
 void mqtt_system::ping(std::string const& name) {
 	static auto const ping_command = std::string("{\"color_temp\":250}");
 	publish(name, ping_command);
